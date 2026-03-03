@@ -1,5 +1,7 @@
 package com.dev.auth.model;
 
+
+import com.dev.auth.model.Role;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -10,19 +12,25 @@ import lombok.Data;
 
 @Document(collection = "users")
 @Data
-public class User {
-    @Id
+public class User  {
+   @Id
     private String id;
 
     @Indexed(unique = true)
-    @NotBlank(message = "Username không được để trống")
+    @NotBlank
     private String username;
 
-    private String password;
-
-    @Email(message = "Email không đúng định dạng")
+    @Indexed(unique = true)
+    @Email
     private String email;
 
-    private Gender gender;    
+    @NotBlank
+    private String password;
+
+    private Role role = Role.USER;
+
+    private boolean enabled = true;
+
+    private Gender gender;
     private int age;
 }
