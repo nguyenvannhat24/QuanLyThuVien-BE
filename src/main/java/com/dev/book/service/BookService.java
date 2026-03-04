@@ -1,9 +1,10 @@
-package com.dev.auth.service;
+package com.dev.book.service;
 
 
 
-import com.dev.auth.dto.BookRequest;
-import com.dev.auth.dto.BookResponse;
+import com.dev.book.dto.BookRequest;
+import com.dev.book.dto.BookResponse;
+
 import org.springframework.data.domain.Page;
 import java.util.List;
 

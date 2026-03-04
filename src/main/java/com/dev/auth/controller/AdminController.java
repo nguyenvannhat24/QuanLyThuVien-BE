@@ -1,8 +1,9 @@
 package com.dev.auth.controller;
 
 import com.dev.auth.dto.UpdateRoleRequest;
-import com.dev.auth.model.User;
-import com.dev.auth.repository.UserRepository;
+import com.dev.user.model.User;
+import com.dev.user.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

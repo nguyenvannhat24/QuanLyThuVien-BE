@@ -1,4 +1,4 @@
-package com.dev.auth.model;
+package com.dev.book.model;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;

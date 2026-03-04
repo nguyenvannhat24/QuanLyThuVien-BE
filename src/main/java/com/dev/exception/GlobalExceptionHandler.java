@@ -1,4 +1,4 @@
-package com.dev.auth.exception;
+package com.dev.exception;
 
 
 import org.springframework.http.ResponseEntity;

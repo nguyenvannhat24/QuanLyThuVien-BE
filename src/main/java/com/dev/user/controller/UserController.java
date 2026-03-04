@@ -1,4 +1,4 @@
-package com.dev.auth.controller;
+package com.dev.user.controller;
 
 import java.util.List;
 
@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dev.auth.model.User;
-import com.dev.auth.repository.UserRepository;
+import com.dev.user.model.User;
+import com.dev.user.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api/admin/users")

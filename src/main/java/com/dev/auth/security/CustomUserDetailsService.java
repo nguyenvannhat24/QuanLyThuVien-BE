@@ -1,7 +1,8 @@
 package com.dev.auth.security;
 
-import com.dev.auth.model.User;
-import com.dev.auth.repository.UserRepository;
+import com.dev.user.model.User;
+import com.dev.user.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.context.annotation.Configuration;

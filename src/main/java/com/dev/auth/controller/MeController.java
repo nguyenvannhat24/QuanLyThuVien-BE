@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dev.auth.dto.ChangePasswordRequest;
 import com.dev.auth.dto.UpdateProfileRequest;
-import com.dev.auth.model.User;
-import com.dev.auth.repository.UserRepository;
+import com.dev.user.model.User;
+import com.dev.user.repository.UserRepository;
 @RestController
 @RequestMapping("/api/user")
 public class MeController {

@@ -1,4 +1,4 @@
-package com.dev.auth.dto;
+package com.dev.book.dto;
 
 import lombok.Builder;
 import lombok.Data;

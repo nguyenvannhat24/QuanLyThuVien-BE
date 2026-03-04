@@ -5,7 +5,7 @@ import java.util.Date;
 
 import org.springframework.stereotype.Service;
 
-import com.dev.auth.model.User;
+import com.dev.user.model.User;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

@@ -1,6 +1,7 @@
-package com.dev.auth.model;
+package com.dev.user.model;
 
 
+import com.dev.auth.model.Gender;
 import com.dev.auth.model.Role;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;

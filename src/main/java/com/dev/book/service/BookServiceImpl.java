@@ -1,10 +1,9 @@
-package com.dev.auth.service;
+package com.dev.book.service;
 
-import com.dev.auth.dto.BookRequest;
-
-import com.dev.auth.dto.BookResponse;
-import com.dev.auth.model.Book;
-import com.dev.auth.repository.BookRepository;
+import com.dev.book.dto.BookRequest;
+import com.dev.book.dto.BookResponse;
+import com.dev.book.model.Book;
+import com.dev.book.repository.BookRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

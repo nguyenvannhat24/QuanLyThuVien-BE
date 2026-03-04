@@ -9,9 +9,9 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.dev.auth.model.User;
 import com.dev.auth.repository.BlacklistTokenRepository;
-import com.dev.auth.repository.UserRepository;
+import com.dev.user.model.User;
+import com.dev.user.repository.UserRepository;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

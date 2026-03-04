@@ -48,6 +48,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/user/**").hasAnyRole("USER","ADMIN")
                 .requestMatchers("/api/books/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/borrows/**").permitAll()
                 .anyRequest().authenticated()
         )
            .exceptionHandling(ex -> ex

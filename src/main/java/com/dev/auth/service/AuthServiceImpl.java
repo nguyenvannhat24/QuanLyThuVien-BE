@@ -16,10 +16,10 @@ import com.dev.auth.dto.LoginRequest;
 import com.dev.auth.dto.RefreshTokenRequest;
 import com.dev.auth.dto.RegisterRequest;
 import com.dev.auth.model.RefreshToken;
-import com.dev.auth.model.User;
 import com.dev.auth.repository.RefreshTokenRepository;
-import com.dev.auth.repository.UserRepository;
 import com.dev.auth.security.JwtService;
+import com.dev.user.model.User;
+import com.dev.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 

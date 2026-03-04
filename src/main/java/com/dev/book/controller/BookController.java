@@ -1,9 +1,9 @@
-package com.dev.auth.controller;
+package com.dev.book.controller;
 
 import com.dev.auth.controller.*;
-import com.dev.auth.dto.BookRequest;
-import com.dev.auth.dto.BookResponse;
-import com.dev.auth.service.BookService;
+import com.dev.book.dto.BookRequest;
+import com.dev.book.dto.BookResponse;
+import com.dev.book.service.BookService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
