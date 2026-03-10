@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface BookRepository extends JpaRepository<Book, Long> {
+public interface BookRepository extends JpaRepository<Book, Long>, org.springframework.data.jpa.repository.JpaSpecificationExecutor<Book> {
 
     List<Book> findByTitleContainingIgnoreCase(String title);
 
@@ -33,8 +33,11 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Optional<Book> findByIsbn(String isbn);
     
-    @Query("SELECT b FROM Book b WHERE " +
-           "LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+    @Query("SELECT DISTINCT b FROM Book b " +
+           "LEFT JOIN FETCH b.author " +
+           "LEFT JOIN FETCH b.category " +
+           "LEFT JOIN FETCH b.publisher " +
+           "WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(b.author.authorName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(b.category.categoryName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(b.publisher.publisherName) LIKE LOWER(CONCAT('%', :keyword, '%'))")

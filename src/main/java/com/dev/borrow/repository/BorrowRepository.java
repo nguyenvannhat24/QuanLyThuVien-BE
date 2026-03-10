@@ -35,4 +35,22 @@ public interface BorrowRepository extends JpaRepository<Borrow, Long> {
     
     @Query("SELECT b FROM Borrow b JOIN FETCH b.user JOIN FETCH b.bookCopy bc JOIN FETCH bc.book WHERE b.status = :status AND b.dueDate < :date")
     List<Borrow> findByStatusAndDueDateBeforeWithDetails(@Param("status") BorrowStatus status, @Param("date") LocalDate date);
+    
+    long countByBorrowDateBetween(LocalDate startDate, LocalDate endDate);
+    
+    @Query("SELECT bc.book.id, bc.book.title, bc.book.isbn, COUNT(b) " +
+           "FROM Borrow b JOIN b.bookCopy bc " +
+           "GROUP BY bc.book.id, bc.book.title, bc.book.isbn " +
+           "ORDER BY COUNT(b) DESC")
+    List<Object[]> findTopBorrowedBooks(org.springframework.data.domain.Pageable pageable);
+    
+    @Query("SELECT FUNCTION('YEAR', b.borrowDate), FUNCTION('MONTH', b.borrowDate), COUNT(b) " +
+           "FROM Borrow b " +
+           "WHERE b.borrowDate BETWEEN :startDate AND :endDate " +
+           "GROUP BY FUNCTION('YEAR', b.borrowDate), FUNCTION('MONTH', b.borrowDate) " +
+           "ORDER BY FUNCTION('YEAR', b.borrowDate), FUNCTION('MONTH', b.borrowDate)")
+    List<Object[]> findBorrowingTrends(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    
+    @Query("SELECT b FROM Borrow b JOIN FETCH b.user JOIN FETCH b.bookCopy bc JOIN FETCH bc.book WHERE b.borrowDate BETWEEN :startDate AND :endDate")
+    List<Borrow> findByBorrowDateBetweenWithDetails(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

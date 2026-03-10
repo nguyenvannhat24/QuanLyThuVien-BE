@@ -1,5 +1,6 @@
 package com.dev.config.controller;
 
+import com.dev.audit.annotation.AdminAction;
 import com.dev.config.dto.SystemConfigRequest;
 import com.dev.config.dto.SystemConfigResponse;
 import com.dev.config.model.SystemConfig;
@@ -37,6 +38,7 @@ public class SystemConfigController {
     }
 
     @PutMapping("/{key}")
+    @AdminAction("UPDATE_SYSTEM_CONFIG")
     public ResponseEntity<SystemConfigResponse> updateConfig(
             @PathVariable String key,
             @Valid @RequestBody SystemConfigRequest request) {

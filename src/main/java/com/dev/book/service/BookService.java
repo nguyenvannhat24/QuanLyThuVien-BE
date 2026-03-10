@@ -30,4 +30,12 @@ public interface BookService {
     Page<BookResponse> filterByPublisher(Long publisherId, Pageable pageable);
 
     Page<BookResponse> filterByPublishYear(Integer year, Pageable pageable);
+
+    Page<BookResponse> advancedSearch(
+        String keyword,
+        Long categoryId,
+        Long publisherId,
+        Boolean availableOnly,
+        Pageable pageable
+    );
 }

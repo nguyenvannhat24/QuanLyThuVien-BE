@@ -24,4 +24,13 @@ public interface PenaltyRepository extends JpaRepository<Penalty, Long> {
     List<Penalty> findByStatus(PenaltyStatus status);
 
     List<Penalty> findByBorrowRecord(Borrow borrow);
+    
+    @Query("SELECT SUM(p.amount) FROM Penalty p WHERE p.status = :status")
+    java.math.BigDecimal sumAmountByStatus(@Param("status") PenaltyStatus status);
+    
+    @Query("SELECT p FROM Penalty p LEFT JOIN FETCH p.borrowRecord b LEFT JOIN FETCH b.bookCopy bc LEFT JOIN FETCH bc.book LEFT JOIN FETCH p.reader WHERE p.status = :status")
+    List<Penalty> findByStatusWithDetails(@Param("status") PenaltyStatus status);
+    
+    @Query("SELECT p FROM Penalty p LEFT JOIN FETCH p.borrowRecord b LEFT JOIN FETCH b.bookCopy bc LEFT JOIN FETCH bc.book LEFT JOIN FETCH p.reader")
+    List<Penalty> findAllWithDetails();
 }

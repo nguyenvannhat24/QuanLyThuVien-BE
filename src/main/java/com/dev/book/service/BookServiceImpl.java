@@ -13,6 +13,7 @@ import com.dev.book.repository.BookRepository;
 import com.dev.book.repository.AuthorRepository;
 import com.dev.book.repository.CategoryRepository;
 import com.dev.book.repository.PublisherRepository;
+import com.dev.book.specification.BookSpecification;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -161,6 +163,46 @@ public class BookServiceImpl implements BookService {
     public Page<BookResponse> filterByPublishYear(Integer year, Pageable pageable) {
         Page<Book> bookPage = bookRepository.findByPublishYear(year, pageable);
         return bookPage.map(this::mapToResponse);
+    }
+
+    @Override
+    public Page<BookResponse> advancedSearch(
+            String keyword,
+            Long categoryId,
+            Long publisherId,
+            Boolean availableOnly,
+            Pageable pageable) {
+        
+        Specification<Book> spec = null;
+        
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            Specification<Book> titleSpec = BookSpecification.titleContains(keyword);
+            Specification<Book> authorSpec = BookSpecification.authorNameContains(keyword);
+            Specification<Book> isbnSpec = BookSpecification.isbnEquals(keyword);
+            
+            Specification<Book> keywordSpec = titleSpec.or(authorSpec).or(isbnSpec);
+            spec = keywordSpec;
+        }
+        
+        if (categoryId != null) {
+            Specification<Book> categorySpec = BookSpecification.hasCategory(categoryId);
+            spec = (spec == null) ? categorySpec : spec.and(categorySpec);
+        }
+        
+        if (publisherId != null) {
+            Specification<Book> publisherSpec = BookSpecification.hasPublisher(publisherId);
+            spec = (spec == null) ? publisherSpec : spec.and(publisherSpec);
+        }
+        
+        if (Boolean.TRUE.equals(availableOnly)) {
+            Specification<Book> availableSpec = BookSpecification.hasAvailableCopies();
+            spec = (spec == null) ? availableSpec : spec.and(availableSpec);
+        }
+        
+        Page<Book> books = (spec == null) 
+                ? bookRepository.findAll(pageable) 
+                : bookRepository.findAll(spec, pageable);
+        return books.map(this::mapToResponse);
     }
 
     private BookResponse mapToResponse(Book book) {
