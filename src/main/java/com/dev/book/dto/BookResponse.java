@@ -13,4 +13,6 @@ public class BookResponse {
     private String category;
     private Double price;
     private Integer quantity;
+    private String isbn;
+    private Boolean available;
 }

@@ -26,9 +26,11 @@ public class BookServiceImpl implements BookService {
         Book book = Book.builder()
                 .title(request.getTitle())
                 .author(request.getAuthor())
+                .isbn(request.getIsbn())
                 .category(request.getCategory())
                 .price(request.getPrice())
                 .quantity(request.getQuantity())
+                .available(request.getAvailable() != null ? request.getAvailable() : true)
                 .build();
 
         bookRepository.save(book);
@@ -36,19 +38,18 @@ public class BookServiceImpl implements BookService {
         return mapToResponse(book);
     }
 
-@Override
-public Page<BookResponse> getAll(int page, int size, String sortBy) {
+    @Override
+    public Page<BookResponse> getAll(int page, int size, String sortBy) {
 
-    Pageable pageable = PageRequest.of(
-            page,
-            size,
-            Sort.by(sortBy).ascending()
-    );
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(sortBy).ascending());
 
-    Page<Book> bookPage = bookRepository.findAll(pageable);
+        Page<Book> bookPage = bookRepository.findAll(pageable);
 
-    return bookPage.map(this::mapToResponse);
-}
+        return bookPage.map(this::mapToResponse);
+    }
 
     @Override
     public BookResponse getById(String id) {
@@ -66,9 +67,12 @@ public Page<BookResponse> getAll(int page, int size, String sortBy) {
 
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
+        book.setIsbn(request.getIsbn());
         book.setCategory(request.getCategory());
         book.setPrice(request.getPrice());
         book.setQuantity(request.getQuantity());
+        if (request.getAvailable() != null)
+            book.setAvailable(request.getAvailable());
 
         bookRepository.save(book);
 
@@ -85,9 +89,11 @@ public Page<BookResponse> getAll(int page, int size, String sortBy) {
                 .id(book.getId())
                 .title(book.getTitle())
                 .author(book.getAuthor())
+                .isbn(book.getIsbn())
                 .category(book.getCategory())
                 .price(book.getPrice())
                 .quantity(book.getQuantity())
+                .available(book.isAvailable())
                 .build();
     }
 }

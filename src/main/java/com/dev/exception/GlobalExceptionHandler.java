@@ -1,6 +1,6 @@
 package com.dev.exception;
 
-
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -9,15 +9,21 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidationException(
-            MethodArgumentNotValidException ex) {
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<?> handleValidationException(
+                        MethodArgumentNotValidException ex) {
 
-        return ResponseEntity
-                .badRequest()
-                .body(new ErrorResponse(
-                        "VALIDATION_ERROR",
-                        "Dữ liệu gửi lên không hợp lệ"
-                ));
-    }
+                return ResponseEntity
+                                .badRequest()
+                                .body(new ErrorResponse(
+                                                "VALIDATION_ERROR",
+                                                "Dữ liệu gửi lên không hợp lệ"));
+        }
+
+        @ExceptionHandler(RuntimeException.class)
+        public ResponseEntity<?> handleRuntimeException(RuntimeException ex) {
+                return ResponseEntity
+                                .status(HttpStatus.BAD_REQUEST)
+                                .body(new ErrorResponse("ERROR", ex.getMessage()));
+        }
 }

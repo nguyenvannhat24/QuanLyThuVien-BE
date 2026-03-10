@@ -20,4 +20,8 @@ public class BookRequest {
 
     @NotNull
     private Integer quantity;
+
+    private String isbn;
+
+    private Boolean available;
 }
