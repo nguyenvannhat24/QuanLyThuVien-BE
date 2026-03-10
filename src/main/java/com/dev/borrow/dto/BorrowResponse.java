@@ -10,9 +10,9 @@ import java.time.LocalDate;
 @Builder
 public class BorrowResponse {
 
-    private String id;
-    private String userId;
-    private String bookId;
+    private Long id;
+    private Long userId;
+    private Long bookId;
 
     private LocalDate borrowDate;
     private LocalDate dueDate;

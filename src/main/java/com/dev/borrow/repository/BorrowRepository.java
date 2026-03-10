@@ -2,24 +2,23 @@ package com.dev.borrow.repository;
 
 import com.dev.borrow.model.Borrow;
 import com.dev.borrow.model.BorrowStatus;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
-// thừa kế MongoRepository để có các phương thức CRUD cơ bản và các hàm được định nghĩa theo tên phương thức để truy vấn dữ liệu
-public interface BorrowRepository extends MongoRepository<Borrow, String> {
 
-    long countByUserIdAndStatus(String userId, BorrowStatus status);
+@Repository
+public interface BorrowRepository extends JpaRepository<Borrow, Long> {
 
-    boolean existsByUserIdAndStatus(String userId, BorrowStatus status);
+    long countByUser_IdAndStatus(Long userId, BorrowStatus status);
 
-    List<Borrow> findByUserId(String userId);
+    boolean existsByUser_IdAndStatus(Long userId, BorrowStatus status);
+
+    List<Borrow> findByUser_Id(Long userId);
 
     List<Borrow> findByStatus(BorrowStatus status);
 
-    long countByBookIdAndStatus(String bookId, BorrowStatus status);
+    long countByBook_IdAndStatus(Long bookId, BorrowStatus status);
 
     long countByStatus(BorrowStatus status);
-
-
-
 }

@@ -14,9 +14,9 @@ public interface BookService {
 
     Page<BookResponse> getAll(int page, int size, String sortBy);
 
-    BookResponse getById(String id);
+    BookResponse getById(Long id);
 
-    BookResponse update(String id, BookRequest request);
+    BookResponse update(Long id, BookRequest request);
 
-    void delete(String id);
+    void delete(Long id);
 }

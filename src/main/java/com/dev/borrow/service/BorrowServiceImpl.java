@@ -1,7 +1,8 @@
 package com.dev.borrow.service;
 
-import com.dev.book.model.Book;
-import com.dev.book.repository.BookRepository;
+import com.dev.book.model.BookCopy;
+import com.dev.book.model.BookCopyStatus;
+import com.dev.book.repository.BookCopyRepository;
 import com.dev.borrow.dto.BorrowResponse;
 import com.dev.borrow.dto.DashboardResponse;
 import com.dev.borrow.model.Borrow;
@@ -16,23 +17,24 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.time.temporal.ChronoUnit;
+
 @Service
 @RequiredArgsConstructor
 public class BorrowServiceImpl implements BorrowService {
 
     private final BorrowRepository borrowRepository;
-    private final BookRepository bookRepository;
+    private final BookCopyRepository bookCopyRepository;
     private final UserRepository userRepository;
     
     @Override
     public DashboardResponse getDashboard() {
 
-        long totalBooks = bookRepository.count();
+        long totalBooks = bookCopyRepository.count();
         long totalUsers = userRepository.count();
         long totalBorrowed =
-                borrowRepository.countByStatus(BorrowStatus.BORROWED);
+                borrowRepository.countByStatus(BorrowStatus.BORROWING);
         long totalLate =
-                borrowRepository.countByStatus(BorrowStatus.LATE);
+                borrowRepository.countByStatus(BorrowStatus.OVERDUE);
 
         return DashboardResponse.builder()
                 .totalBooks(totalBooks)
@@ -41,36 +43,35 @@ public class BorrowServiceImpl implements BorrowService {
                 .totalLateBooks(totalLate)
                 .build();
     }
-    @Override
-    public BorrowResponse borrowBook(String userId, String bookId) {
 
-        userRepository.findById(userId)
+    @Override
+    public BorrowResponse borrowBook(Long userId, Long bookId) {
+
+        com.dev.user.model.User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new RuntimeException("Book not found"));
-
-        if (book.getQuantity() <= 0) {
-            throw new RuntimeException("Book out of stock");
-        }
+        BookCopy bookCopy = bookCopyRepository.findByBook_IdAndStatus(bookId, BookCopyStatus.AVAILABLE)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No available copy for this book"));
 
         long currentBorrowed =
-                borrowRepository.countByUserIdAndStatus(userId, BorrowStatus.BORROWED);
+                borrowRepository.countByUser_IdAndStatus(userId, BorrowStatus.BORROWING);
 
         if (currentBorrowed >= 3) {
             throw new RuntimeException("Maximum borrowed books reached");
         }
 
-        book.setQuantity(book.getQuantity() - 1);
-        bookRepository.save(book);
+        bookCopy.setStatus(BookCopyStatus.BORROWED);
+        bookCopyRepository.save(bookCopy);
 
         Borrow borrow = Borrow.builder()
-                .userId(userId)
-                .bookId(bookId)
+                .user(user)
+                .bookCopy(bookCopy)
                 .borrowDate(LocalDate.now())
                 .dueDate(LocalDate.now().plusDays(14))
-                .status(BorrowStatus.BORROWED)
-                .extendCount(0)
+                .status(BorrowStatus.BORROWING)
+                .renewCount(0)
                 .build();
 
         borrowRepository.save(borrow);
@@ -79,7 +80,7 @@ public class BorrowServiceImpl implements BorrowService {
     }
 
     @Override
-    public void returnBook(String borrowId) {
+    public void returnBook(Long borrowId) {
 
         Borrow borrow = borrowRepository.findById(borrowId)
                 .orElseThrow(() -> new RuntimeException("Borrow not found"));
@@ -88,8 +89,7 @@ public class BorrowServiceImpl implements BorrowService {
             throw new RuntimeException("Book already returned");
         }
 
-        Book book = bookRepository.findById(borrow.getBookId())
-                .orElseThrow(() -> new RuntimeException("Book not found"));
+        BookCopy bookCopy = borrow.getBookCopy();
 
         LocalDate today = LocalDate.now();
 
@@ -102,38 +102,38 @@ public class BorrowServiceImpl implements BorrowService {
 
             long fine = daysLate * 5000;
 
-            borrow.setFineAmount(fine);
-            borrow.setStatus(BorrowStatus.LATE);
+            borrow.setFineAmount(new java.math.BigDecimal(fine));
+            borrow.setStatus(BorrowStatus.OVERDUE);
 
         } else {
             borrow.setStatus(BorrowStatus.RETURNED);
-            borrow.setFineAmount(0L);
+            borrow.setFineAmount(java.math.BigDecimal.ZERO);
         }
 
-        book.setQuantity(book.getQuantity() + 1);
+        bookCopy.setStatus(BookCopyStatus.AVAILABLE);
 
-        bookRepository.save(book);
+        bookCopyRepository.save(bookCopy);
         borrowRepository.save(borrow);
     }
     @Override
-    public void extendBorrow(String borrowId) {
+    public void extendBorrow(Long borrowId) {
 
         Borrow borrow = borrowRepository.findById(borrowId)
                 .orElseThrow(() -> new RuntimeException("Borrow not found"));
 
-        if (borrow.getExtendCount() >= 2) {
+        if (borrow.getRenewCount() >= 2) {
             throw new RuntimeException("Extend limit reached");
         }
 
         borrow.setDueDate(borrow.getDueDate().plusDays(7));
-        borrow.setExtendCount(borrow.getExtendCount() + 1);
+        borrow.setRenewCount(borrow.getRenewCount() + 1);
 
         borrowRepository.save(borrow);
     }
 
     @Override
-    public List<BorrowResponse> getMyBorrows(String userId) {
-        return borrowRepository.findByUserId(userId)
+    public List<BorrowResponse> getMyBorrows(Long userId) {
+        return borrowRepository.findByUser_Id(userId)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -150,8 +150,8 @@ public class BorrowServiceImpl implements BorrowService {
     private BorrowResponse mapToResponse(Borrow borrow) {
         return BorrowResponse.builder()
                 .id(borrow.getId())
-                .userId(borrow.getUserId())
-                .bookId(borrow.getBookId())
+                .userId(borrow.getUser().getId())
+                .bookId(borrow.getBookCopy().getBook().getId())
                 .borrowDate(borrow.getBorrowDate())
                 .dueDate(borrow.getDueDate())
                 .returnDate(borrow.getReturnDate())

@@ -17,7 +17,9 @@ public class RegisterRequest {
     @Email
     private String email;
 
+    private String fullName;
+
     private Gender gender;
-    private int age;
     
+    private Integer age;
 }

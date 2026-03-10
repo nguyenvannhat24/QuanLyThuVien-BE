@@ -20,7 +20,7 @@ public class AdminController {
     @PutMapping("/users/{id}/role")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateUserRole(
-            @PathVariable String id,
+            @PathVariable Long id,
             @RequestBody UpdateRoleRequest request,
              Authentication authentication
     ) {

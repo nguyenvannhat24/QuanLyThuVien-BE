@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class BorrowRequest {
-    private String bookId;
+    private Long bookId;
 }

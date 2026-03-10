@@ -4,24 +4,26 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 public class BookRequest {
 
     @NotBlank
     private String title;
 
-    @NotBlank
-    private String author;
+    private Long authorId;
 
-    private String category;
-
-    @NotNull
-    private Double price;
+    private Long categoryId;
 
     @NotNull
-    private Integer quantity;
+    private BigDecimal price;
 
     private String isbn;
 
-    private Boolean available;
+    private Long publisherId;
+
+    private Integer publishYear;
+
+    private String description;
 }

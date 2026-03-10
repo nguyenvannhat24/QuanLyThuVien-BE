@@ -1,12 +1,21 @@
 package com.dev.borrow.model;
 
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.*;
+import com.dev.user.model.User;
+import com.dev.book.model.BookCopy;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-@Document(collection = "borrows")
+@Entity
+@Table(name = "borrow_records", indexes = {
+    @Index(name = "idx_user_id", columnList = "user_id"),
+    @Index(name = "idx_book_copy_id", columnList = "book_copy_id"),
+    @Index(name = "idx_status", columnList = "status"),
+    @Index(name = "idx_due_date", columnList = "due_date")
+})
 @Data
 @Builder
 @AllArgsConstructor
@@ -14,18 +23,58 @@ import java.time.LocalDate;
 public class Borrow {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private String userId;
-    private String bookId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_borrow_user"))
+    private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "book_copy_id", nullable = false, foreignKey = @ForeignKey(name = "fk_borrow_book_copy"))
+    private BookCopy bookCopy;
+
+    @Column(nullable = false)
     private LocalDate borrowDate;
+
+    @Column(nullable = false)
     private LocalDate dueDate;
+
     private LocalDate returnDate;
 
-    private BorrowStatus status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private BorrowStatus status = BorrowStatus.BORROWING;
 
-    private Integer extendCount;
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer renewCount = 0;
 
-    private Long fineAmount;
+    @Column(precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal fineAmount = BigDecimal.ZERO;
+
+    @Column(nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(nullable = false)
+    @Builder.Default
+    private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

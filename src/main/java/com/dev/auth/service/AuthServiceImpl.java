@@ -61,7 +61,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 5.Trả về AuthResponse
         AuthResponse response = new AuthResponse();
-        response.setId(savedUser.getId());
+        response.setId(String.valueOf(savedUser.getId()));
         response.setUsername(savedUser.getUsername());
         response.setEmail(savedUser.getEmail());
 
@@ -93,16 +93,16 @@ public ResponseEntity<?> login(LoginRequest request) {
     String refreshToken = jwtService.generateRefreshToken(user);
 
     // 3a. Lưu refresh token vào database (xóa token cũ nếu có)
-    refreshTokenRepository.deleteByUsername(user.getUsername());
+    refreshTokenRepository.deleteByUser(user);
     RefreshToken model = new RefreshToken();
-    model.setUsername(user.getUsername());
+    model.setUser(user);
     model.setToken(refreshToken);
     model.setExpiryDate(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000));
     refreshTokenRepository.save(model);
 
     // 4. Trả về response
     AuthResponse response = new AuthResponse();
-    response.setId(user.getId());
+    response.setId(String.valueOf(user.getId()));
     response.setUsername(user.getUsername());
     response.setEmail(user.getEmail());
     response.setToken(token);
@@ -133,7 +133,7 @@ public ResponseEntity<?> login(LoginRequest request) {
         }
 
         // tìm user tương ứng
-        User user = userRepository.findByUsername(stored.getUsername())
+        User user = userRepository.findById(stored.getUser().getId())
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
 
         // tạo token mới
@@ -146,7 +146,7 @@ public ResponseEntity<?> login(LoginRequest request) {
         refreshTokenRepository.save(stored);
 
         AuthResponse resp = new AuthResponse();
-        resp.setId(user.getId());
+        resp.setId(String.valueOf(user.getId()));
         resp.setUsername(user.getUsername());
         resp.setEmail(user.getEmail());
         resp.setToken(newToken);

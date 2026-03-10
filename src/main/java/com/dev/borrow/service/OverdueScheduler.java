@@ -21,11 +21,11 @@ public class OverdueScheduler {
     public void checkOverdueBooks() {
 
         List<Borrow> borrows =
-                borrowRepository.findByStatus(BorrowStatus.BORROWED);
+                borrowRepository.findByStatus(BorrowStatus.BORROWING);
 
         for (Borrow borrow : borrows) {
             if (LocalDate.now().isAfter(borrow.getDueDate())) {
-                borrow.setStatus(BorrowStatus.LATE);
+                borrow.setStatus(BorrowStatus.OVERDUE);
                 borrowRepository.save(borrow);
             }
         }

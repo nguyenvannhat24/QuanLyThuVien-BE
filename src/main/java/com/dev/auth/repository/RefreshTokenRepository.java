@@ -1,13 +1,16 @@
 package com.dev.auth.repository;
 
 import com.dev.auth.model.RefreshToken;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import com.dev.user.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-public interface RefreshTokenRepository extends MongoRepository<RefreshToken, String> {
+@Repository
+public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
 
     Optional<RefreshToken> findByToken(String token);
 
-    void deleteByUsername(String username);
+    void deleteByUser(User user);
 }

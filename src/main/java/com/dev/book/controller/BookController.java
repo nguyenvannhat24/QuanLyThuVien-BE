@@ -35,18 +35,18 @@ public Page<BookResponse> getAll(
 }
 
     @GetMapping("/{id}")
-    public BookResponse getById(@PathVariable String id) {
+    public BookResponse getById(@PathVariable Long id) {
         return bookService.getById(id);
     }
 
     @PutMapping("/admin/update/{id}")
-    public BookResponse update(@PathVariable String id,
+    public BookResponse update(@PathVariable Long id,
                                @Valid @RequestBody BookRequest request) {
         return bookService.update(id, request);
     }
 
     @DeleteMapping("/admin/delete/{id}")
-    public void delete(@PathVariable String id) {
+    public void delete(@PathVariable Long id) {
         bookService.delete(id);
     }
 }

@@ -93,9 +93,9 @@ public ResponseEntity<?> logout(
 
     blacklistTokenRepository.save(blacklist);
 
-    refreshTokenRepository.deleteByUsername(
-            jwtService.extractUsername(token)
-    );
+    User user = userRepository.findByUsername(jwtService.extractUsername(token))
+            .orElseThrow(() -> new RuntimeException("User not found"));
+    refreshTokenRepository.deleteByUser(user);
 
     return ResponseEntity.ok("Logged out successfully");
 }

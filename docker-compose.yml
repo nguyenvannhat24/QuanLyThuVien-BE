@@ -1,33 +1,40 @@
 version: '3.8'
 
 services:
-  mongodb:
-    image: mongo:latest
-    container_name: dev_mongodb
+  mysql:
+    image: mysql:8.0
+    container_name: library_mysql
     ports:
-      - '27017:27017'
+      - '3306:3306'
     environment:
-      MONGO_INITDB_DATABASE: dev_db
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: library_db
+      MYSQL_USER: library_user
+      MYSQL_PASSWORD: library_pass
     volumes:
-      - mongodb_data:/data/db
+      - mysql_data:/var/lib/mysql
+      - ./src/main/resources/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
     networks:
-      - dev_network
+      - library_network
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
-  mongo-express:
-    image: mongo-express:latest
-    container_name: dev_mongo_express
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: library_phpmyadmin
     ports:
-      - '8082:8081'
+      - '8082:80'
     environment:
-      ME_CONFIG_MONGODB_URL: mongodb://mongodb:27017/
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: admin
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: library_user
+      PMA_PASSWORD: library_pass
+      MYSQL_ROOT_PASSWORD: root_password
     depends_on:
-      - mongodb
+      - mysql
     restart: unless-stopped
     networks:
-      - dev_network
+      - library_network
 
   spring-boot-app:
     build:
@@ -36,21 +43,23 @@ services:
     volumes:
       - ./src:/app/src
       - ~/.m2:/root/.m2
-    container_name: dev_spring_boot_app
+    container_name: library_spring_app
     ports:
       - '8081:8081'
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/dev_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/library_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: library_user
+      SPRING_DATASOURCE_PASSWORD: library_pass
       SPRING_PROFILES_ACTIVE: dev
     depends_on:
-      - mongodb
+      - mysql
     restart: unless-stopped
     networks:
-      - dev_network
+      - library_network
 
 volumes:
-  mongodb_data:
+  mysql_data:
 
 networks:
-  dev_network:
+  library_network:
     driver: bridge

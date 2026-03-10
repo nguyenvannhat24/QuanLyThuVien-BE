@@ -7,13 +7,13 @@ import java.util.List;
 
 public interface BorrowService {
 
-    BorrowResponse borrowBook(String userId, String bookId);
+    BorrowResponse borrowBook(Long userId, Long bookId);
 
-    void returnBook(String borrowId);
+    void returnBook(Long borrowId);
 
-    void extendBorrow(String borrowId);
+    void extendBorrow(Long borrowId);
 
-    List<BorrowResponse> getMyBorrows(String userId);
+    List<BorrowResponse> getMyBorrows(Long userId);
 
     List<BorrowResponse> getAll();
     

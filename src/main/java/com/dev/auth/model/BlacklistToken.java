@@ -1,19 +1,24 @@
 package com.dev.auth.model;
 
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.*;
 
 import java.util.Date;
 
 @Data
-@Document(collection = "blacklist_tokens")
+@Entity
+@Table(name = "blacklist_tokens", indexes = {
+    @Index(name = "idx_token", columnList = "token")
+})
 public class BlacklistToken {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
+    @Column(unique = true, length = 500, nullable = false)
     private String token;
 
+    @Column(nullable = false)
     private Date expiryDate;
 }
