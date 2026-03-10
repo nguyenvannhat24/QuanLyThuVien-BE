@@ -354,6 +354,65 @@ Các TODO comments đã thêm vào code cho Phase 3:
 
 ---
 
+## Bug Fixes (Post-Implementation)
+
+**Ngày:** 11/03/2026  
+**Commit:** `206e747` - fix(phase-2): resolve critical runtime issues
+
+Sau khi hoàn thành Phase 2, explore agent phát hiện 4 critical issues cần fix:
+
+### 1. Missing @Transactional (HIGH PRIORITY) ✅
+**File:** `BorrowServiceImpl.java`  
+**Issue:** `borrowBook()` method không có `@Transactional`, có thể gây partial failure khi save nhiều entities (BookCopy + Borrow).  
+**Fix:** Thêm `@Transactional` annotation.
+
+### 2. Duplicate Return Methods (CRITICAL) ✅
+**File:** `BorrowServiceImpl.java`, `BorrowService.java`, `BorrowController.java`  
+**Issue:** Có 2 methods xử lý trả sách:
+- `returnBook(Long borrowId)` - void method, tính fine với hardcoded 5000 VND/ngày
+- `returnBorrow(Long id)` - BorrowResponse, không tính fine
+
+**Root cause:** Delegated agent tạo method mới nhưng không xóa method cũ.  
+**Fix:** 
+- Consolidate thành single `returnBorrow(Long id)` method
+- Tính fine động từ `SystemConfig.fine_per_day` (không hardcode)
+- Xóa interface signature của `returnBook()`
+- Xóa controller endpoint cũ `PUT /{id}/return`
+
+### 3. Deprecated extendBorrow() Method ✅
+**File:** `BorrowServiceImpl.java`, `BorrowService.java`, `BorrowController.java`  
+**Issue:** Method `extendBorrow()` (hardcoded 7 days) vẫn tồn tại dù đã có `renewBorrow()` (dùng SystemConfig).  
+**Fix:** 
+- Xóa `extendBorrow()` method khỏi implementation và interface
+- Xóa controller endpoint `PUT /{id}/extend`
+
+### 4. N+1 Query Problem (PERFORMANCE) ✅
+**File:** `BorrowRepository.java`, `BorrowServiceImpl.java`  
+**Issue:** `getMyBorrows()` và `getAll()` gây N+1 queries vì `mapToResponse()` access lazy-loaded relationships: `borrow.getUser().getId()`, `borrow.getBookCopy().getBook().getId()`.  
+**Fix:** 
+- Thêm fetch join queries vào repository:
+  ```java
+  @Query("SELECT b FROM Borrow b JOIN FETCH b.user JOIN FETCH b.bookCopy bc JOIN FETCH bc.book WHERE b.user.id = :userId")
+  List<Borrow> findByUser_IdWithDetails(@Param("userId") Long userId);
+  
+  @Query("SELECT b FROM Borrow b JOIN FETCH b.user JOIN FETCH b.bookCopy bc JOIN FETCH bc.book")
+  List<Borrow> findAllWithDetails();
+  ```
+- Update service methods để dùng queries mới
+
+### 5. Missing Validation (LOW PRIORITY) ✅
+**File:** `BookController.java`  
+**Issue:** Filter endpoints accept parameters không có validation (có thể gửi empty string).  
+**Fix:** Thêm `@NotBlank` cho:
+- `/search?keyword=` - keyword param
+- `/filter/category?name=` - name param
+
+**Files modified:** 5 (BorrowService, BorrowServiceImpl, BorrowRepository, BorrowController, BookController)  
+**Lines changed:** +20, -65  
+**Compilation status:** ✅ BUILD SUCCESS (86 source files)
+
+---
+
 ## Statistics
 
 - **Entities:** 1 mới (SystemConfig)
