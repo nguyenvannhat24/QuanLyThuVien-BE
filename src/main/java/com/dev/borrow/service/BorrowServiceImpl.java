@@ -50,6 +50,7 @@ public class BorrowServiceImpl implements BorrowService {
     }
 
     @Override
+    @Transactional
     public BorrowResponse borrowBook(Long userId, Long bookId) {
 
         com.dev.user.model.User user = userRepository.findById(userId)
@@ -91,58 +92,6 @@ public class BorrowServiceImpl implements BorrowService {
     }
 
     @Override
-    public void returnBook(Long borrowId) {
-
-        Borrow borrow = borrowRepository.findById(borrowId)
-                .orElseThrow(() -> new RuntimeException("Borrow not found"));
-
-        if (borrow.getStatus() == BorrowStatus.RETURNED) {
-            throw new RuntimeException("Book already returned");
-        }
-
-        BookCopy bookCopy = borrow.getBookCopy();
-
-        LocalDate today = LocalDate.now();
-
-        borrow.setReturnDate(today);
-
-        if (today.isAfter(borrow.getDueDate())) {
-
-            long daysLate = ChronoUnit.DAYS
-                    .between(borrow.getDueDate(), today);
-
-            long fine = daysLate * 5000;
-
-            borrow.setFineAmount(new java.math.BigDecimal(fine));
-            borrow.setStatus(BorrowStatus.OVERDUE);
-
-        } else {
-            borrow.setStatus(BorrowStatus.RETURNED);
-            borrow.setFineAmount(java.math.BigDecimal.ZERO);
-        }
-
-        bookCopy.setStatus(BookCopyStatus.AVAILABLE);
-
-        bookCopyRepository.save(bookCopy);
-        borrowRepository.save(borrow);
-    }
-    @Override
-    public void extendBorrow(Long borrowId) {
-
-        Borrow borrow = borrowRepository.findById(borrowId)
-                .orElseThrow(() -> new RuntimeException("Borrow not found"));
-
-        if (borrow.getRenewCount() >= 2) {
-            throw new RuntimeException("Extend limit reached");
-        }
-
-        borrow.setDueDate(borrow.getDueDate().plusDays(7));
-        borrow.setRenewCount(borrow.getRenewCount() + 1);
-
-        borrowRepository.save(borrow);
-    }
-
-    @Override
     @Transactional
     public BorrowResponse returnBorrow(Long id) {
 
@@ -153,12 +102,24 @@ public class BorrowServiceImpl implements BorrowService {
             throw new RuntimeException("Book already returned");
         }
 
-        borrow.setReturnDate(LocalDate.now());
-        borrow.setStatus(BorrowStatus.RETURNED);
-
         BookCopy bookCopy = borrow.getBookCopy();
-        bookCopy.setStatus(BookCopyStatus.AVAILABLE);
+        LocalDate today = LocalDate.now();
 
+        borrow.setReturnDate(today);
+
+        if (today.isAfter(borrow.getDueDate())) {
+            long daysLate = ChronoUnit.DAYS.between(borrow.getDueDate(), today);
+            Integer finePerDay = systemConfigService.getConfigValueAsInt("fine_per_day");
+            long fine = daysLate * finePerDay;
+            
+            borrow.setFineAmount(new java.math.BigDecimal(fine));
+            borrow.setStatus(BorrowStatus.OVERDUE);
+        } else {
+            borrow.setStatus(BorrowStatus.RETURNED);
+            borrow.setFineAmount(java.math.BigDecimal.ZERO);
+        }
+
+        bookCopy.setStatus(BookCopyStatus.AVAILABLE);
         bookCopyRepository.save(bookCopy);
         borrowRepository.save(borrow);
 
@@ -196,7 +157,7 @@ public class BorrowServiceImpl implements BorrowService {
 
     @Override
     public List<BorrowResponse> getMyBorrows(Long userId) {
-        return borrowRepository.findByUser_Id(userId)
+        return borrowRepository.findByUser_IdWithDetails(userId)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -204,7 +165,7 @@ public class BorrowServiceImpl implements BorrowService {
 
     @Override
     public List<BorrowResponse> getAll() {
-        return borrowRepository.findAll()
+        return borrowRepository.findAllWithDetails()
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());

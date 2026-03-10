@@ -3,6 +3,8 @@ package com.dev.borrow.repository;
 import com.dev.borrow.model.Borrow;
 import com.dev.borrow.model.BorrowStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -16,6 +18,12 @@ public interface BorrowRepository extends JpaRepository<Borrow, Long> {
     boolean existsByUser_IdAndStatus(Long userId, BorrowStatus status);
 
     List<Borrow> findByUser_Id(Long userId);
+
+    @Query("SELECT b FROM Borrow b JOIN FETCH b.user JOIN FETCH b.bookCopy bc JOIN FETCH bc.book WHERE b.user.id = :userId")
+    List<Borrow> findByUser_IdWithDetails(@Param("userId") Long userId);
+
+    @Query("SELECT b FROM Borrow b JOIN FETCH b.user JOIN FETCH b.bookCopy bc JOIN FETCH bc.book")
+    List<Borrow> findAllWithDetails();
 
     List<Borrow> findByStatus(BorrowStatus status);
 

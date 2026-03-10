@@ -55,7 +55,7 @@ public Page<BookResponse> getAll(
     @GetMapping("/search")
     @PreAuthorize("permitAll()")
     public Page<BookResponse> searchBooks(
-            @RequestParam String keyword,
+            @RequestParam @jakarta.validation.constraints.NotBlank String keyword,
             Pageable pageable
     ) {
         return bookService.searchBooks(keyword, pageable);
@@ -73,7 +73,7 @@ public Page<BookResponse> getAll(
     @GetMapping("/filter/category")
     @PreAuthorize("permitAll()")
     public Page<BookResponse> filterByCategory(
-            @RequestParam String name,
+            @RequestParam @jakarta.validation.constraints.NotBlank String name,
             Pageable pageable
     ) {
         return bookService.filterByCategory(name, pageable);

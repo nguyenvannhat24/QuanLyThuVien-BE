@@ -9,10 +9,6 @@ public interface BorrowService {
 
     BorrowResponse borrowBook(Long userId, Long bookId);
 
-    void returnBook(Long borrowId);
-
-    void extendBorrow(Long borrowId);
-
     BorrowResponse returnBorrow(Long id);
 
     BorrowResponse renewBorrow(Long id);

@@ -31,16 +31,6 @@ public class BorrowController {
         return borrowService.borrowBook(user.getId(), request.getBookId());
     }
 
-    @PutMapping("/{id}/return")
-    public void returnBook(@PathVariable Long id) {
-        borrowService.returnBook(id);
-    }
-
-    @PutMapping("/{id}/extend")
-    public void extendBorrow(@PathVariable Long id) {
-        borrowService.extendBorrow(id);
-    }
-
     @PostMapping("/{id}/return")
     @PreAuthorize("hasAnyRole('READER', 'LIBRARIAN', 'ADMIN')")
     public ResponseEntity<BorrowResponse> returnBorrow(@PathVariable Long id) {
