@@ -32,4 +32,7 @@ public interface BorrowRepository extends JpaRepository<Borrow, Long> {
     long countByStatus(BorrowStatus status);
 
     List<Borrow> findByStatusAndDueDateBefore(BorrowStatus status, LocalDate date);
+    
+    @Query("SELECT b FROM Borrow b JOIN FETCH b.user JOIN FETCH b.bookCopy bc JOIN FETCH bc.book WHERE b.status = :status AND b.dueDate < :date")
+    List<Borrow> findByStatusAndDueDateBeforeWithDetails(@Param("status") BorrowStatus status, @Param("date") LocalDate date);
 }

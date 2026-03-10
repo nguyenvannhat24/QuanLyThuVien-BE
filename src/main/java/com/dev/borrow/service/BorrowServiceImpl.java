@@ -1,5 +1,6 @@
 package com.dev.borrow.service;
 
+import com.dev.book.model.Book;
 import com.dev.book.model.BookCopy;
 import com.dev.book.model.BookCopyStatus;
 import com.dev.book.repository.BookCopyRepository;
@@ -9,6 +10,11 @@ import com.dev.borrow.model.Borrow;
 import com.dev.borrow.model.BorrowStatus;
 import com.dev.borrow.repository.BorrowRepository;
 import com.dev.config.service.SystemConfigService;
+import com.dev.notification.service.NotificationService;
+import com.dev.penalty.service.PenaltyService;
+import com.dev.reservation.model.Reservation;
+import com.dev.reservation.model.ReservationStatus;
+import com.dev.reservation.service.ReservationService;
 import com.dev.user.model.UserStatus;
 import com.dev.user.repository.UserRepository;
 
@@ -19,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.time.temporal.ChronoUnit;
 
@@ -30,6 +37,9 @@ public class BorrowServiceImpl implements BorrowService {
     private final BookCopyRepository bookCopyRepository;
     private final UserRepository userRepository;
     private final SystemConfigService systemConfigService;
+    private final PenaltyService penaltyService;
+    private final ReservationService reservationService;
+    private final NotificationService notificationService;
     
     @Override
     public DashboardResponse getDashboard() {
@@ -60,16 +70,33 @@ public class BorrowServiceImpl implements BorrowService {
             throw new RuntimeException("User is not active");
         }
 
+        // Check unpaid penalties
+        long unpaidCount = penaltyService.countUnpaidPenalties(userId);
+        if (unpaidCount > 0) {
+            throw new RuntimeException("Cannot borrow: user has " + unpaidCount + " unpaid penalties");
+        }
+
+        // Check borrow limit
+        Integer maxBorrow = systemConfigService.getConfigValueAsInt("max_borrow_per_reader");
+        if (maxBorrow == null) {
+            maxBorrow = 5;
+        }
+        long currentBorrows = borrowRepository.countByUser_IdAndStatus(userId, BorrowStatus.BORROWING);
+        if (currentBorrows >= maxBorrow) {
+            throw new RuntimeException("Cannot borrow: reached limit of " + maxBorrow + " books");
+        }
+
         BookCopy bookCopy = bookCopyRepository.findByBook_IdAndStatus(bookId, BookCopyStatus.AVAILABLE)
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("No available copy for this book"));
 
-        long currentBorrowed =
-                borrowRepository.countByUser_IdAndStatus(userId, BorrowStatus.BORROWING);
+        Book book = bookCopy.getBook();
 
-        if (currentBorrowed >= 3) {
-            throw new RuntimeException("Maximum borrowed books reached");
+        // Check if book reserved for someone else
+        Optional<Reservation> notifiedReservation = reservationService.getTopNotifiedReservation(book);
+        if (notifiedReservation.isPresent() && !notifiedReservation.get().getReader().getId().equals(userId)) {
+            throw new RuntimeException("This book is reserved for another user");
         }
 
         bookCopy.setStatus(BookCopyStatus.BORROWED);
@@ -87,6 +114,11 @@ public class BorrowServiceImpl implements BorrowService {
                 .build();
 
         borrowRepository.save(borrow);
+
+        // Fulfill reservation if exists for this user
+        if (notifiedReservation.isPresent() && notifiedReservation.get().getReader().getId().equals(userId)) {
+            reservationService.fulfillReservation(notifiedReservation.get().getReservationId());
+        }
 
         return mapToResponse(borrow);
     }
@@ -114,6 +146,9 @@ public class BorrowServiceImpl implements BorrowService {
             
             borrow.setFineAmount(new java.math.BigDecimal(fine));
             borrow.setStatus(BorrowStatus.OVERDUE);
+
+            // Create penalty record
+            penaltyService.createOverduePenalty(borrow);
         } else {
             borrow.setStatus(BorrowStatus.RETURNED);
             borrow.setFineAmount(java.math.BigDecimal.ZERO);
@@ -122,6 +157,9 @@ public class BorrowServiceImpl implements BorrowService {
         bookCopy.setStatus(BookCopyStatus.AVAILABLE);
         bookCopyRepository.save(bookCopy);
         borrowRepository.save(borrow);
+
+        // Notify next person in reservation queue
+        reservationService.notifyNextInQueue(bookCopy.getBook());
 
         return mapToResponse(borrow);
     }
@@ -144,6 +182,12 @@ public class BorrowServiceImpl implements BorrowService {
 
         if (LocalDate.now().isAfter(borrow.getDueDate())) {
             throw new RuntimeException("Cannot renew overdue borrow");
+        }
+
+        // Check if there are waiting reservations for this book
+        int waitingCount = reservationService.countWaitingReservations(borrow.getBookCopy().getBook());
+        if (waitingCount > 0) {
+            throw new RuntimeException("Cannot renew: book has " + waitingCount + " waiting reservations");
         }
 
         Integer defaultBorrowDays = systemConfigService.getConfigValueAsInt("default_borrow_days");
