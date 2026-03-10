@@ -5,6 +5,7 @@ import com.dev.borrow.model.BorrowStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -21,4 +22,6 @@ public interface BorrowRepository extends JpaRepository<Borrow, Long> {
     long countByBook_IdAndStatus(Long bookId, BorrowStatus status);
 
     long countByStatus(BorrowStatus status);
+
+    List<Borrow> findByStatusAndDueDateBefore(BorrowStatus status, LocalDate date);
 }

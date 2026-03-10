@@ -133,6 +133,36 @@ public class BookServiceImpl implements BookService {
         bookRepository.deleteById(id);
     }
 
+    @Override
+    public Page<BookResponse> searchBooks(String keyword, Pageable pageable) {
+        Page<Book> bookPage = bookRepository.searchByKeyword(keyword, pageable);
+        return bookPage.map(this::mapToResponse);
+    }
+
+    @Override
+    public Page<BookResponse> filterByAuthor(Long authorId, Pageable pageable) {
+        Page<Book> bookPage = bookRepository.findByAuthor_Id(authorId, pageable);
+        return bookPage.map(this::mapToResponse);
+    }
+
+    @Override
+    public Page<BookResponse> filterByCategory(String categoryName, Pageable pageable) {
+        Page<Book> bookPage = bookRepository.findByCategory_CategoryName(categoryName, pageable);
+        return bookPage.map(this::mapToResponse);
+    }
+
+    @Override
+    public Page<BookResponse> filterByPublisher(Long publisherId, Pageable pageable) {
+        Page<Book> bookPage = bookRepository.findByPublisher_Id(publisherId, pageable);
+        return bookPage.map(this::mapToResponse);
+    }
+
+    @Override
+    public Page<BookResponse> filterByPublishYear(Integer year, Pageable pageable) {
+        Page<Book> bookPage = bookRepository.findByPublishYear(year, pageable);
+        return bookPage.map(this::mapToResponse);
+    }
+
     private BookResponse mapToResponse(Book book) {
         return BookResponse.builder()
                 .id(book.getId())

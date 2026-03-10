@@ -7,6 +7,8 @@ import com.dev.borrow.service.BorrowService;
 import com.dev.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -37,6 +39,18 @@ public class BorrowController {
     @PutMapping("/{id}/extend")
     public void extendBorrow(@PathVariable Long id) {
         borrowService.extendBorrow(id);
+    }
+
+    @PostMapping("/{id}/return")
+    @PreAuthorize("hasAnyRole('READER', 'LIBRARIAN', 'ADMIN')")
+    public ResponseEntity<BorrowResponse> returnBorrow(@PathVariable Long id) {
+        return ResponseEntity.ok(borrowService.returnBorrow(id));
+    }
+
+    @PostMapping("/{id}/renew")
+    @PreAuthorize("hasAnyRole('READER', 'LIBRARIAN', 'ADMIN')")
+    public ResponseEntity<BorrowResponse> renewBorrow(@PathVariable Long id) {
+        return ResponseEntity.ok(borrowService.renewBorrow(id));
     }
 
     @GetMapping("/my-books")

@@ -28,6 +28,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     Page<Book> findByCategory_Id(Long categoryId, Pageable pageable);
     
     Page<Book> findByPublisher_Id(Long publisherId, Pageable pageable);
+    
+    Page<Book> findByPublishYear(Integer year, Pageable pageable);
 
     Optional<Book> findByIsbn(String isbn);
     

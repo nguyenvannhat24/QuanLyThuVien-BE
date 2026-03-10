@@ -6,6 +6,7 @@ import com.dev.book.dto.BookRequest;
 import com.dev.book.dto.BookResponse;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface BookService {
@@ -19,4 +20,14 @@ public interface BookService {
     BookResponse update(Long id, BookRequest request);
 
     void delete(Long id);
+
+    Page<BookResponse> searchBooks(String keyword, Pageable pageable);
+
+    Page<BookResponse> filterByAuthor(Long authorId, Pageable pageable);
+
+    Page<BookResponse> filterByCategory(String categoryName, Pageable pageable);
+
+    Page<BookResponse> filterByPublisher(Long publisherId, Pageable pageable);
+
+    Page<BookResponse> filterByPublishYear(Integer year, Pageable pageable);
 }

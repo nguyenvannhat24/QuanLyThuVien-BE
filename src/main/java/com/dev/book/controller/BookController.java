@@ -9,6 +9,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,5 +50,50 @@ public Page<BookResponse> getAll(
     @DeleteMapping("/admin/delete/{id}")
     public void delete(@PathVariable Long id) {
         bookService.delete(id);
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("permitAll()")
+    public Page<BookResponse> searchBooks(
+            @RequestParam String keyword,
+            Pageable pageable
+    ) {
+        return bookService.searchBooks(keyword, pageable);
+    }
+
+    @GetMapping("/filter/author/{authorId}")
+    @PreAuthorize("permitAll()")
+    public Page<BookResponse> filterByAuthor(
+            @PathVariable Long authorId,
+            Pageable pageable
+    ) {
+        return bookService.filterByAuthor(authorId, pageable);
+    }
+
+    @GetMapping("/filter/category")
+    @PreAuthorize("permitAll()")
+    public Page<BookResponse> filterByCategory(
+            @RequestParam String name,
+            Pageable pageable
+    ) {
+        return bookService.filterByCategory(name, pageable);
+    }
+
+    @GetMapping("/filter/publisher/{publisherId}")
+    @PreAuthorize("permitAll()")
+    public Page<BookResponse> filterByPublisher(
+            @PathVariable Long publisherId,
+            Pageable pageable
+    ) {
+        return bookService.filterByPublisher(publisherId, pageable);
+    }
+
+    @GetMapping("/filter/year/{year}")
+    @PreAuthorize("permitAll()")
+    public Page<BookResponse> filterByPublishYear(
+            @PathVariable Integer year,
+            Pageable pageable
+    ) {
+        return bookService.filterByPublishYear(year, pageable);
     }
 }

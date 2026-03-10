@@ -13,6 +13,10 @@ public interface BorrowService {
 
     void extendBorrow(Long borrowId);
 
+    BorrowResponse returnBorrow(Long id);
+
+    BorrowResponse renewBorrow(Long id);
+
     List<BorrowResponse> getMyBorrows(Long userId);
 
     List<BorrowResponse> getAll();
