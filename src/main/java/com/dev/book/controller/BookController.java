@@ -9,7 +9,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -95,5 +98,27 @@ public Page<BookResponse> getAll(
             Pageable pageable
     ) {
         return bookService.filterByPublishYear(year, pageable);
+    }
+
+    @GetMapping("/advanced-search")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Page<BookResponse>> advancedSearch(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long publisherId,
+            @RequestParam(required = false) Boolean availableOnly,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection
+    ) {
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        
+        Page<BookResponse> result = bookService.advancedSearch(
+                keyword, categoryId, publisherId, availableOnly, pageable
+        );
+        
+        return ResponseEntity.ok(result);
     }
 }
