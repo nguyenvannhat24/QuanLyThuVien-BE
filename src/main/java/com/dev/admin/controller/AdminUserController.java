@@ -2,6 +2,7 @@ package com.dev.admin.controller;
 
 import com.dev.admin.service.AdminUserService;
 import com.dev.audit.annotation.AdminAction;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +14,7 @@ import java.util.Map;
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "Quản lý người dùng (Admin)", description = "API quản lý người dùng cho admin - khóa, mở khóa, thay đổi vai trò")
 public class AdminUserController {
     
     private final AdminUserService adminUserService;

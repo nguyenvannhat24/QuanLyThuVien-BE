@@ -11,6 +11,7 @@ import com.dev.statistics.dto.DashboardMetricsResponse;
 import com.dev.statistics.dto.OverdueReportResponse;
 import com.dev.statistics.dto.PenaltyReportResponse;
 import com.dev.statistics.service.StatisticsService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/reports")
 @RequiredArgsConstructor
+@Tag(name = "Thống kê & Báo cáo", description = "API thống kê và báo cáo - dashboard, lịch sử mượn, sách quá hạn, phạt và sách phổ biến")
 public class ReportsController {
 
     private final StatisticsService statisticsService;

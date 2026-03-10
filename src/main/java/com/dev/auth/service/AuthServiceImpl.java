@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +28,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+    
+    private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -34,21 +38,22 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     @Override
     public ResponseEntity register(RegisterRequest request) {
-        // 1.Check username đã tồn tại chưa
+        log.info("Registration attempt for username: {}", request.getUsername());
+        
         if (userRepository.existsByUsername(request.getUsername())) {
+            log.warn("Registration failed: username already exists - {}", request.getUsername());
             return ResponseEntity
             .status(HttpStatus.CONFLICT)
                     .body("{\"message\": \"Username đã tồn tại!\"}");
         }
 
-        // 2.Check email đã tồn tại chưa
         if (userRepository.existsByEmail(request.getEmail())) {
+            log.warn("Registration failed: email already exists - {}", request.getEmail());
             return ResponseEntity
             .status(HttpStatus.CONFLICT)
                     .body("{\"message\": \"Email đã tồn tại!\"}");
         }
 
-        // 3.Tạo User mới
         User user = new User();
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -56,10 +61,9 @@ public class AuthServiceImpl implements AuthService {
         user.setGender(request.getGender());
         user.setAge(request.getAge());
 
-        // 4.Lưu vào database
         User savedUser = userRepository.save(user);
+        log.info("User registered successfully: {}", savedUser.getUsername());
 
-        // 5.Trả về AuthResponse
         AuthResponse response = new AuthResponse();
         response.setId(String.valueOf(savedUser.getId()));
         response.setUsername(savedUser.getUsername());
@@ -70,29 +74,33 @@ public class AuthServiceImpl implements AuthService {
     }
 @Override
 public ResponseEntity<?> login(LoginRequest request) {
+    log.info("Login attempt for username: {}", request.getUsername());
 
     if(request.getUsername() == null || request.getPassword() == null) {
+        log.warn("Login failed: missing username or password");
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body("{\"message\": \"Username và password không được để trống!\"}");
     }
-    // 1. Xác thực bằng AuthenticationManager (chuẩn Spring Security)
-    authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                    request.getUsername(),
-                    request.getPassword()
-            )
-    );
+    
+    try {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getUsername(),
+                        request.getPassword()
+                )
+        );
+    } catch (Exception e) {
+        log.error("Authentication failed for username: {}", request.getUsername(), e);
+        throw e;
+    }
 
-    // 2. Lấy user từ database
     User user = userRepository.findByUsername(request.getUsername())
             .orElseThrow(() -> new RuntimeException("User không tồn tại"));
 
-    // 3. Tạo JWT token và refresh token
     String token = jwtService.generateToken(user);
     String refreshToken = jwtService.generateRefreshToken(user);
 
-    // 3a. Lưu refresh token vào database (xóa token cũ nếu có)
     refreshTokenRepository.deleteByUser(user);
     RefreshToken model = new RefreshToken();
     model.setUser(user);
@@ -100,7 +108,8 @@ public ResponseEntity<?> login(LoginRequest request) {
     model.setExpiryDate(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000));
     refreshTokenRepository.save(model);
 
-    // 4. Trả về response
+    log.info("User logged in successfully: {}", user.getUsername());
+
     AuthResponse response = new AuthResponse();
     response.setId(String.valueOf(user.getId()));
     response.setUsername(user.getUsername());
@@ -114,36 +123,37 @@ public ResponseEntity<?> login(LoginRequest request) {
     @Override
     public ResponseEntity<?> refreshToken(RefreshTokenRequest request) {
         if (request == null || request.getRefreshToken() == null) {
+            log.warn("Refresh token request missing token");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("{\"message\": \"Refresh token không được để trống\"}");
         }
 
         Optional<RefreshToken> optional = refreshTokenRepository.findByToken(request.getRefreshToken());
         if (optional.isEmpty()) {
+            log.warn("Invalid refresh token provided");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("{\"message\": \"Refresh token không hợp lệ\"}");
         }
 
         RefreshToken stored = optional.get();
         if (stored.getExpiryDate().before(new Date())) {
-            // token expired, xoá khỏi database
             refreshTokenRepository.delete(stored);
+            log.warn("Expired refresh token attempted");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("{\"message\": \"Refresh token đã hết hạn\"}");
         }
 
-        // tìm user tương ứng
         User user = userRepository.findById(stored.getUser().getId())
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
 
-        // tạo token mới
         String newToken = jwtService.generateToken(user);
         String newRefresh = jwtService.generateRefreshToken(user);
 
-        // cập nhật refresh token trong db
         stored.setToken(newRefresh);
         stored.setExpiryDate(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000));
         refreshTokenRepository.save(stored);
+
+        log.info("Token refreshed successfully for user: {}", user.getUsername());
 
         AuthResponse resp = new AuthResponse();
         resp.setId(String.valueOf(user.getId()));

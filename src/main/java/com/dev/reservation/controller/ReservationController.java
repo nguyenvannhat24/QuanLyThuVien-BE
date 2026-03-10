@@ -5,6 +5,7 @@ import com.dev.reservation.dto.ReservationResponse;
 import com.dev.reservation.service.ReservationService;
 import com.dev.user.model.User;
 import com.dev.user.repository.UserRepository;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/reservations")
 @RequiredArgsConstructor
+@Tag(name = "Đặt chỗ", description = "API quản lý đặt chỗ sách - tạo, xem và hủy đặt chỗ")
 public class ReservationController {
     private final ReservationService reservationService;
     private final UserRepository userRepository;

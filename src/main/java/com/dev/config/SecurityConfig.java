@@ -65,6 +65,8 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:4200",
+            "http://localhost:3000",
             "https://app.apidog.com"
         ));
 

@@ -5,6 +5,7 @@ import com.dev.config.dto.SystemConfigRequest;
 import com.dev.config.dto.SystemConfigResponse;
 import com.dev.config.model.SystemConfig;
 import com.dev.config.service.SystemConfigService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/admin/config")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "Cấu hình hệ thống", description = "API quản lý cấu hình hệ thống - xem và cập nhật cấu hình")
 public class SystemConfigController {
 
     private final SystemConfigService systemConfigService;

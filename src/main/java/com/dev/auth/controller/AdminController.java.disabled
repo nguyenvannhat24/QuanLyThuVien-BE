@@ -1,0 +1,42 @@
+package com.dev.auth.controller;
+
+import com.dev.auth.dto.UpdateRoleRequest;
+import com.dev.user.model.User;
+import com.dev.user.repository.UserRepository;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/admin")
+@RequiredArgsConstructor
+@Tag(name = "Quản trị viên", description = "API quản trị viên - thay đổi vai trò người dùng")
+public class AdminController {
+
+    private final UserRepository userRepository;
+
+    // COMMENTED OUT: Duplicate endpoint - use AdminUserController.changeUserRole instead
+    // @PutMapping("/users/{id}/role")
+    // @PreAuthorize("hasRole('ADMIN')")
+    // public ResponseEntity<?> updateUserRole(
+    //         @PathVariable Long id,
+    //         @RequestBody UpdateRoleRequest request,
+    //          Authentication authentication
+    // ) {
+    //
+    //     User user = userRepository.findById(id)
+    //             .orElseThrow(() -> new RuntimeException("User not found"));
+    // if (user.getUsername().equals(authentication.getName())) {
+    //     return ResponseEntity.badRequest().body("You cannot change your own role");
+    // }
+    //     user.setRole(request.getRole());
+    //
+    //     userRepository.save(user);
+    //
+    //     return ResponseEntity.ok("Role updated successfully");
+    // }
+}

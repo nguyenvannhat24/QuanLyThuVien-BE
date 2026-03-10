@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dev.user.model.User;
 import com.dev.user.repository.UserRepository;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/admin/users")
+@Tag(name = "Người dùng", description = "API quản lý người dùng - xem và xóa người dùng")
 public class UserController {
 
     @Autowired

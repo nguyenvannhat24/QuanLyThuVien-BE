@@ -14,6 +14,8 @@ import com.dev.penalty.repository.PenaltyRepository;
 import com.dev.user.model.User;
 import com.dev.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class PenaltyServiceImpl implements PenaltyService {
+    
+    private static final Logger log = LoggerFactory.getLogger(PenaltyServiceImpl.class);
 
     private final PenaltyRepository penaltyRepository;
     private final BorrowRepository borrowRepository;
@@ -37,6 +41,8 @@ public class PenaltyServiceImpl implements PenaltyService {
     @Transactional
     public PenaltyResponse createOverduePenalty(Borrow borrow) {
         BigDecimal fine = calculateOverdueFine(borrow, LocalDate.now());
+        log.info("Creating overdue penalty - borrowId: {}, userId: {}, amount: {}", 
+                 borrow.getId(), borrow.getUser().getId(), fine);
 
         Penalty penalty = Penalty.builder()
                 .borrowRecord(borrow)
@@ -64,10 +70,12 @@ public class PenaltyServiceImpl implements PenaltyService {
     @Transactional
     public PenaltyResponse createManualPenalty(PenaltyRequest request) {
         if (request.getType() != PenaltyType.DAMAGED && request.getType() != PenaltyType.LOST) {
+            log.warn("Manual penalty creation denied - invalid type: {}", request.getType());
             throw new RuntimeException("Manual penalties can only be DAMAGED or LOST type");
         }
 
         if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            log.warn("Manual penalty creation denied - invalid amount");
             throw new RuntimeException("Penalty amount must be greater than zero");
         }
 
@@ -81,6 +89,9 @@ public class PenaltyServiceImpl implements PenaltyService {
         } else {
             throw new RuntimeException("Borrow ID is required for manual penalties");
         }
+
+        log.info("Creating manual penalty - type: {}, borrowId: {}, userId: {}, amount: {}", 
+                 request.getType(), request.getBorrowId(), reader.getId(), request.getAmount());
 
         Penalty penalty = Penalty.builder()
                 .borrowRecord(borrow)
@@ -109,16 +120,21 @@ public class PenaltyServiceImpl implements PenaltyService {
     @Override
     @Transactional
     public PenaltyResponse payPenalty(Long penaltyId) {
+        log.info("Penalty payment - penaltyId: {}", penaltyId);
+        
         Penalty penalty = penaltyRepository.findById(penaltyId)
                 .orElseThrow(() -> new RuntimeException("Penalty not found with id: " + penaltyId));
 
         if (penalty.getStatus() == PenaltyStatus.PAID) {
+            log.warn("Payment denied - already paid: penaltyId={}", penaltyId);
             throw new RuntimeException("Penalty is already paid");
         }
 
         penalty.setStatus(PenaltyStatus.PAID);
         penalty.setPaidDate(LocalDate.now());
         penalty = penaltyRepository.save(penalty);
+        
+        log.info("Penalty paid successfully - penaltyId: {}, amount: {}", penaltyId, penalty.getAmount());
 
         return mapToResponse(penalty);
     }

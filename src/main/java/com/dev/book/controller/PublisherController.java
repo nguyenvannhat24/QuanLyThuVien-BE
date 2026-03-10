@@ -3,6 +3,7 @@ package com.dev.book.controller;
 import com.dev.book.dto.PublisherRequest;
 import com.dev.book.dto.PublisherResponse;
 import com.dev.book.service.PublisherService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/publishers")
 @RequiredArgsConstructor
+@Tag(name = "Nhà xuất bản", description = "API quản lý nhà xuất bản - tạo, xem, cập nhật, xóa nhà xuất bản")
 public class PublisherController {
 
     private final PublisherService publisherService;

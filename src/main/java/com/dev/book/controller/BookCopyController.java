@@ -3,6 +3,7 @@ package com.dev.book.controller;
 import com.dev.book.dto.BookCopyRequest;
 import com.dev.book.dto.BookCopyResponse;
 import com.dev.book.service.BookCopyService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/book-copies")
 @RequiredArgsConstructor
+@Tag(name = "Bản sao sách", description = "API quản lý bản sao sách - tạo, xem, cập nhật, xóa bản sao")
 public class BookCopyController {
 
     private final BookCopyService bookCopyService;

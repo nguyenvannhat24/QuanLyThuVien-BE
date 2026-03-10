@@ -19,6 +19,8 @@ import com.dev.user.model.UserStatus;
 import com.dev.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +34,8 @@ import java.time.temporal.ChronoUnit;
 @Service
 @RequiredArgsConstructor
 public class BorrowServiceImpl implements BorrowService {
+    
+    private static final Logger log = LoggerFactory.getLogger(BorrowServiceImpl.class);
 
     private final BorrowRepository borrowRepository;
     private final BookCopyRepository bookCopyRepository;
@@ -61,28 +65,31 @@ public class BorrowServiceImpl implements BorrowService {
 
     @Override
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = "topBooks", allEntries = true)
     public BorrowResponse borrowBook(Long userId, Long bookId) {
+        log.info("Borrow request - userId: {}, bookId: {}", userId, bookId);
 
         com.dev.user.model.User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.getStatus() != UserStatus.ACTIVE) {
+            log.warn("Borrow denied - user not active: userId={}", userId);
             throw new RuntimeException("User is not active");
         }
 
-        // Check unpaid penalties
         long unpaidCount = penaltyService.countUnpaidPenalties(userId);
         if (unpaidCount > 0) {
+            log.warn("Borrow denied - unpaid penalties: userId={}, count={}", userId, unpaidCount);
             throw new RuntimeException("Cannot borrow: user has " + unpaidCount + " unpaid penalties");
         }
 
-        // Check borrow limit
         Integer maxBorrow = systemConfigService.getConfigValueAsInt("max_borrow_per_reader");
         if (maxBorrow == null) {
             maxBorrow = 5;
         }
         long currentBorrows = borrowRepository.countByUser_IdAndStatus(userId, BorrowStatus.BORROWING);
         if (currentBorrows >= maxBorrow) {
+            log.warn("Borrow denied - limit reached: userId={}, current={}, limit={}", userId, currentBorrows, maxBorrow);
             throw new RuntimeException("Cannot borrow: reached limit of " + maxBorrow + " books");
         }
 
@@ -93,9 +100,9 @@ public class BorrowServiceImpl implements BorrowService {
 
         Book book = bookCopy.getBook();
 
-        // Check if book reserved for someone else
         Optional<Reservation> notifiedReservation = reservationService.getTopNotifiedReservation(book);
         if (notifiedReservation.isPresent() && !notifiedReservation.get().getReader().getId().equals(userId)) {
+            log.warn("Borrow denied - book reserved for another user: bookId={}", bookId);
             throw new RuntimeException("This book is reserved for another user");
         }
 
@@ -113,24 +120,28 @@ public class BorrowServiceImpl implements BorrowService {
                 .renewCount(0)
                 .build();
 
-        borrowRepository.save(borrow);
+        borrow = borrowRepository.save(borrow);
 
-        // Fulfill reservation if exists for this user
         if (notifiedReservation.isPresent() && notifiedReservation.get().getReader().getId().equals(userId)) {
             reservationService.fulfillReservation(notifiedReservation.get().getReservationId());
         }
+
+        log.info("Book borrowed successfully - borrowId: {}, userId: {}, bookId: {}", borrow.getId(), userId, bookId);
 
         return mapToResponse(borrow);
     }
 
     @Override
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = "topBooks", allEntries = true)
     public BorrowResponse returnBorrow(Long id) {
+        log.info("Return request - borrowId: {}", id);
 
         Borrow borrow = borrowRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Borrow not found"));
 
         if (borrow.getStatus() == BorrowStatus.RETURNED) {
+            log.warn("Return denied - already returned: borrowId={}", id);
             throw new RuntimeException("Book already returned");
         }
 
@@ -147,18 +158,18 @@ public class BorrowServiceImpl implements BorrowService {
             borrow.setFineAmount(new java.math.BigDecimal(fine));
             borrow.setStatus(BorrowStatus.OVERDUE);
 
-            // Create penalty record
             penaltyService.createOverduePenalty(borrow);
+            log.warn("Book returned late - borrowId: {}, daysLate: {}, fine: {}", id, daysLate, fine);
         } else {
             borrow.setStatus(BorrowStatus.RETURNED);
             borrow.setFineAmount(java.math.BigDecimal.ZERO);
+            log.info("Book returned on time - borrowId: {}", id);
         }
 
         bookCopy.setStatus(BookCopyStatus.AVAILABLE);
         bookCopyRepository.save(bookCopy);
         borrowRepository.save(borrow);
 
-        // Notify next person in reservation queue
         reservationService.notifyNextInQueue(bookCopy.getBook());
 
         return mapToResponse(borrow);
@@ -166,27 +177,32 @@ public class BorrowServiceImpl implements BorrowService {
 
     @Override
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = "topBooks", allEntries = true)
     public BorrowResponse renewBorrow(Long id) {
+        log.info("Renew request - borrowId: {}", id);
 
         Borrow borrow = borrowRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Borrow not found"));
 
         if (borrow.getStatus() != BorrowStatus.BORROWING) {
+            log.warn("Renew denied - invalid status: borrowId={}, status={}", id, borrow.getStatus());
             throw new RuntimeException("Can only renew borrowing records");
         }
 
         Integer maxRenewCount = systemConfigService.getConfigValueAsInt("max_renew_count");
         if (borrow.getRenewCount() >= maxRenewCount) {
+            log.warn("Renew denied - max renewals reached: borrowId={}, count={}", id, borrow.getRenewCount());
             throw new RuntimeException("Maximum renew count reached");
         }
 
         if (LocalDate.now().isAfter(borrow.getDueDate())) {
+            log.warn("Renew denied - overdue: borrowId={}", id);
             throw new RuntimeException("Cannot renew overdue borrow");
         }
 
-        // Check if there are waiting reservations for this book
         int waitingCount = reservationService.countWaitingReservations(borrow.getBookCopy().getBook());
         if (waitingCount > 0) {
+            log.warn("Renew denied - waiting reservations: borrowId={}, waitingCount={}", id, waitingCount);
             throw new RuntimeException("Cannot renew: book has " + waitingCount + " waiting reservations");
         }
 
@@ -195,6 +211,8 @@ public class BorrowServiceImpl implements BorrowService {
         borrow.setRenewCount(borrow.getRenewCount() + 1);
 
         borrowRepository.save(borrow);
+        
+        log.info("Borrow renewed successfully - borrowId: {}, newRenewCount: {}", id, borrow.getRenewCount());
 
         return mapToResponse(borrow);
     }
