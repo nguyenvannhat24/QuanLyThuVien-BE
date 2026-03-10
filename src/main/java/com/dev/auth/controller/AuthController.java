@@ -23,6 +23,7 @@ import com.dev.auth.service.AuthService;
 import com.dev.user.model.User;
 import com.dev.user.repository.UserRepository;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Xác thực", description = "API xác thực người dùng - đăng ký, đăng nhập, làm mới token, đăng xuất")
 public class AuthController {
     private final JwtService jwtService;
     private final BlacklistTokenRepository blacklistTokenRepository;

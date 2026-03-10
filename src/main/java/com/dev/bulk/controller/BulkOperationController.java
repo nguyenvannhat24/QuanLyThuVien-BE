@@ -4,6 +4,7 @@ import com.dev.audit.annotation.AdminAction;
 import com.dev.bulk.dto.GenerateBookCopiesRequest;
 import com.dev.bulk.service.BulkOperationService;
 import com.dev.book.model.BookCopy;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/admin/bulk")
 @PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
+@Tag(name = "Thao tác hàng loạt", description = "API thao tác hàng loạt - import sách, tạo bản sao sách")
 public class BulkOperationController {
     
     private final BulkOperationService bulkOperationService;

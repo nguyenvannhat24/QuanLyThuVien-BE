@@ -27,9 +27,10 @@ public interface BorrowRepository extends JpaRepository<Borrow, Long> {
 
     List<Borrow> findByStatus(BorrowStatus status);
 
-    long countByBook_IdAndStatus(Long bookId, BorrowStatus status);
-
     long countByStatus(BorrowStatus status);
+
+    @Query("SELECT COUNT(b) FROM Borrow b WHERE b.bookCopy.book.id = :bookId AND b.status = :status")
+    long countByBookIdAndStatus(@Param("bookId") Long bookId, @Param("status") BorrowStatus status);
 
     List<Borrow> findByStatusAndDueDateBefore(BorrowStatus status, LocalDate date);
     

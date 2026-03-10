@@ -5,6 +5,7 @@ import com.dev.penalty.dto.PenaltyResponse;
 import com.dev.penalty.service.PenaltyService;
 import com.dev.user.model.User;
 import com.dev.user.repository.UserRepository;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/penalties")
 @RequiredArgsConstructor
+@Tag(name = "Phạt", description = "API quản lý phạt - tạo phạt, xem phạt và thanh toán phạt")
 public class PenaltyController {
     private final PenaltyService penaltyService;
     private final UserRepository userRepository;

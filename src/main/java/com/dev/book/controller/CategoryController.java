@@ -3,6 +3,7 @@ package com.dev.book.controller;
 import com.dev.book.dto.CategoryRequest;
 import com.dev.book.dto.CategoryResponse;
 import com.dev.book.service.CategoryService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
+@Tag(name = "Danh mục", description = "API quản lý danh mục sách - tạo, xem, cập nhật, xóa danh mục")
 public class CategoryController {
 
     private final CategoryService categoryService;

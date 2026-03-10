@@ -5,6 +5,7 @@ import com.dev.book.dto.BookRequest;
 import com.dev.book.dto.BookResponse;
 import com.dev.book.service.BookService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/books")
 @RequiredArgsConstructor
+@Tag(name = "Sách", description = "API quản lý sách - tạo, cập nhật, xóa, tìm kiếm và lọc sách")
 public class BookController {
 
     private final BookService bookService;

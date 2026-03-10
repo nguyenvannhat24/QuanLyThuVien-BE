@@ -4,6 +4,7 @@ import com.dev.notification.dto.NotificationResponse;
 import com.dev.notification.service.NotificationService;
 import com.dev.user.model.User;
 import com.dev.user.repository.UserRepository;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
+@Tag(name = "Thông báo", description = "API quản lý thông báo - xem và đánh dấu đã đọc")
 public class NotificationController {
     private final NotificationService notificationService;
     private final UserRepository userRepository;

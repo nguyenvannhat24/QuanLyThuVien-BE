@@ -3,6 +3,7 @@ package com.dev.book.controller;
 import com.dev.book.dto.AuthorRequest;
 import com.dev.book.dto.AuthorResponse;
 import com.dev.book.service.AuthorService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/authors")
 @RequiredArgsConstructor
+@Tag(name = "Tác giả", description = "API quản lý tác giả - tạo, xem, cập nhật, xóa tác giả")
 public class AuthorController {
 
     private final AuthorService authorService;

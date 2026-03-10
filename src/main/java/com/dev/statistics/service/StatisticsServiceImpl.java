@@ -11,6 +11,7 @@ import com.dev.statistics.dto.BorrowTrendResponse;
 import com.dev.statistics.dto.DashboardMetricsResponse;
 import com.dev.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,6 +66,7 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "topBooks", key = "#limit")
     public List<BookStatisticsResponse> getTopBorrowedBooks(int limit) {
         return borrowRepository.findTopBorrowedBooks(PageRequest.of(0, limit))
                 .stream()

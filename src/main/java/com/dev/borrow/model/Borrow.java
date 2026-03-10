@@ -14,7 +14,9 @@ import java.time.LocalDateTime;
     @Index(name = "idx_user_id", columnList = "user_id"),
     @Index(name = "idx_book_copy_id", columnList = "book_copy_id"),
     @Index(name = "idx_status", columnList = "status"),
-    @Index(name = "idx_due_date", columnList = "due_date")
+    @Index(name = "idx_due_date", columnList = "due_date"),
+    @Index(name = "idx_user_status", columnList = "user_id, status"),
+    @Index(name = "idx_status_due_date", columnList = "status, due_date")
 })
 @Data
 @Builder

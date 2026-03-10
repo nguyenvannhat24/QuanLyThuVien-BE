@@ -12,7 +12,9 @@ import java.time.LocalDate;
     @Index(name = "idx_book_id", columnList = "book_id"),
     @Index(name = "idx_reader_id", columnList = "reader_id"),
     @Index(name = "idx_status", columnList = "status"),
-    @Index(name = "idx_expire_date", columnList = "expire_date")
+    @Index(name = "idx_expire_date", columnList = "expire_date"),
+    @Index(name = "idx_book_status", columnList = "book_id, status"),
+    @Index(name = "idx_queue_position", columnList = "queuePosition")
 })
 @Data
 @Builder

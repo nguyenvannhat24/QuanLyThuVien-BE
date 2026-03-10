@@ -14,8 +14,11 @@ import com.dev.auth.dto.ChangePasswordRequest;
 import com.dev.auth.dto.UpdateProfileRequest;
 import com.dev.user.model.User;
 import com.dev.user.repository.UserRepository;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/user")
+@Tag(name = "Hồ sơ người dùng", description = "API hồ sơ người dùng - xem, cập nhật thông tin và đổi mật khẩu")
 public class MeController {
       @Autowired
     private UserRepository userRepository;
