@@ -32,7 +32,7 @@ Hệ thống quản lý thư viện cung cấp một giải pháp hoàn chỉnh 
 ### ✅ Phase 2: Xác thực và phân quyền
 - Đăng ký và đăng nhập
 - JWT authentication (access token + refresh token)
-- Phân quyền theo vai trò (ADMIN, LIBRARIAN, MEMBER)
+- Phân quyền theo vai trò (ADMIN, LIBRARIAN, READER)
 - Spring Security integration
 
 ### ✅ Phase 3: Mượn và trả sách
