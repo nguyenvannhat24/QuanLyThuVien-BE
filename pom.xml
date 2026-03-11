@@ -109,11 +109,11 @@
 			<scope>runtime</scope>
         </dependency>
 
-		<!-- SpringDoc OpenAPI (Swagger) -->
+		<!-- SpringDoc OpenAPI (Swagger) - v3.x for Spring Boot 4.x -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.6.0</version>
+			<version>3.0.2</version>
 		</dependency>
 
 		<!-- AOP - AspectJ for Spring Boot 4.x -->
@@ -124,6 +124,12 @@
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjweaver</artifactId>
+		</dependency>
+
+		<!-- Spring Cache -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
 		</dependency>
 
 		<!-- Apache Commons CSV -->
