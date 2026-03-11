@@ -12,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.dev.auth.dto.AuthResponse;
 import com.dev.auth.dto.LoginRequest;
@@ -36,7 +37,9 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
+    
     @Override
+    @Transactional
     public AuthResponse register(RegisterRequest request) {
         log.info("Registration attempt for username: {}", request.getUsername());
         
@@ -69,8 +72,10 @@ public class AuthServiceImpl implements AuthService {
         return response;
         
     }
-@Override
-public AuthResponse login(LoginRequest request) {
+    
+    @Override
+    @Transactional
+    public AuthResponse login(LoginRequest request) {
     log.info("Login attempt for username: {}", request.getUsername());
 
     if(request.getUsername() == null || request.getPassword() == null) {
@@ -116,6 +121,7 @@ public AuthResponse login(LoginRequest request) {
 }
     
     @Override
+    @Transactional
     public AuthResponse refreshToken(RefreshTokenRequest request) {
         if (request == null || request.getRefreshToken() == null) {
             log.warn("Refresh token request missing token");
