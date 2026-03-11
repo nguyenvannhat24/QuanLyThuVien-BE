@@ -3,6 +3,8 @@ package com.dev.book.controller;
 import com.dev.book.dto.BookCopyRequest;
 import com.dev.book.dto.BookCopyResponse;
 import com.dev.book.service.BookCopyService;
+import com.dev.constant.MessageConstants;
+import com.dev.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,33 +25,38 @@ public class BookCopyController {
 
     @GetMapping
     @PreAuthorize("permitAll()")
-    public ResponseEntity<List<BookCopyResponse>> getAll() {
-        return ResponseEntity.ok(bookCopyService.getAll());
+    public ResponseEntity<ApiResponse<List<BookCopyResponse>>> getAll() {
+        List<BookCopyResponse> bookCopies = bookCopyService.getAll();
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, bookCopies));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<BookCopyResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(bookCopyService.getById(id));
+    public ResponseEntity<ApiResponse<BookCopyResponse>> getById(@PathVariable Long id) {
+        BookCopyResponse bookCopy = bookCopyService.getById(id);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, bookCopy));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<BookCopyResponse> create(@Valid @RequestBody BookCopyRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(bookCopyService.create(request));
+    public ResponseEntity<ApiResponse<BookCopyResponse>> create(@Valid @RequestBody BookCopyRequest request) {
+        BookCopyResponse bookCopy = bookCopyService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, bookCopy));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<BookCopyResponse> update(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<BookCopyResponse>> update(@PathVariable Long id,
                                                    @Valid @RequestBody BookCopyRequest request) {
-        return ResponseEntity.ok(bookCopyService.update(id, request));
+        BookCopyResponse bookCopy = bookCopyService.update(id, request);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, bookCopy));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         bookCopyService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, null));
     }
 }

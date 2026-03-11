@@ -3,6 +3,8 @@ package com.dev.book.controller;
 import com.dev.book.dto.CategoryRequest;
 import com.dev.book.dto.CategoryResponse;
 import com.dev.book.service.CategoryService;
+import com.dev.constant.MessageConstants;
+import com.dev.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,33 +25,38 @@ public class CategoryController {
 
     @GetMapping
     @PreAuthorize("permitAll()")
-    public ResponseEntity<List<CategoryResponse>> getAll() {
-        return ResponseEntity.ok(categoryService.getAll());
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAll() {
+        List<CategoryResponse> categories = categoryService.getAll();
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, categories));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<CategoryResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(categoryService.getById(id));
+    public ResponseEntity<ApiResponse<CategoryResponse>> getById(@PathVariable Long id) {
+        CategoryResponse category = categoryService.getById(id);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, category));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CategoryRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(request));
+    public ResponseEntity<ApiResponse<CategoryResponse>> create(@Valid @RequestBody CategoryRequest request) {
+        CategoryResponse category = categoryService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(MessageConstants.CATEGORY_CREATED, category));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<CategoryResponse> update(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<CategoryResponse>> update(@PathVariable Long id,
                                                    @Valid @RequestBody CategoryRequest request) {
-        return ResponseEntity.ok(categoryService.update(id, request));
+        CategoryResponse category = categoryService.update(id, request);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.CATEGORY_UPDATED, category));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         categoryService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.CATEGORY_DELETED, null));
     }
 }

@@ -20,6 +20,8 @@ import com.dev.auth.model.BlacklistToken;
 import com.dev.auth.repository.BlacklistTokenRepository;
 import com.dev.auth.security.JwtService;
 import com.dev.auth.service.AuthService;
+import com.dev.constant.MessageConstants;
+import com.dev.dto.ApiResponse;
 import com.dev.user.model.User;
 import com.dev.user.repository.UserRepository;
 
@@ -41,24 +43,28 @@ public class AuthController {
     private UserRepository userRepository;
     // Endpoint đăng ký
     @PostMapping("/register")
-    public ResponseEntity<?> register(
+    public ResponseEntity<ApiResponse<AuthResponse>> register(
         @Valid @RequestBody RegisterRequest request
     ) {
-        return authService.register(request);
+        AuthResponse response = authService.register(request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(MessageConstants.REGISTER_SUCCESS, response));
     }
     
     // Endpoint đăng nhập
     @PostMapping("/login")
-    public ResponseEntity<?> login(
+    public ResponseEntity<ApiResponse<AuthResponse>> login(
         @Valid @RequestBody LoginRequest request
     ) {
-        return authService.login(request);
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.LOGIN_SUCCESS, response));
     }
 
-    // Endpoint làm mới token
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@RequestBody RefreshTokenRequest request) {
-        return authService.refreshToken(request);
+    public ResponseEntity<ApiResponse<AuthResponse>> refresh(@RequestBody RefreshTokenRequest request) {
+        AuthResponse response = authService.refreshToken(request);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.REFRESH_TOKEN_SUCCESS, response));
     }
 
           @GetMapping("/me")
@@ -75,30 +81,31 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-public ResponseEntity<?> logout(
-        HttpServletRequest request
-) {
+    public ResponseEntity<ApiResponse<String>> logout(
+            HttpServletRequest request
+    ) {
 
-    String header = request.getHeader("Authorization");
+        String header = request.getHeader("Authorization");
 
-    if (header == null || !header.startsWith("Bearer ")) {
-        return ResponseEntity.badRequest().body("Invalid token");
+        if (header == null || !header.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(MessageConstants.INVALID_TOKEN));
+        }
+
+        String token = header.substring(7);
+
+        Date expiry =  jwtService.extractExpiration(token);
+
+        BlacklistToken blacklist = new BlacklistToken();
+        blacklist.setToken(token);
+        blacklist.setExpiryDate(expiry);
+
+        blacklistTokenRepository.save(blacklist);
+
+        User user = userRepository.findByUsername(jwtService.extractUsername(token))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        refreshTokenRepository.deleteByUser(user);
+
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.LOGOUT_SUCCESS, "OK"));
     }
-
-    String token = header.substring(7);
-
-    Date expiry =  jwtService.extractExpiration(token);
-
-    BlacklistToken blacklist = new BlacklistToken();
-    blacklist.setToken(token);
-    blacklist.setExpiryDate(expiry);
-
-    blacklistTokenRepository.save(blacklist);
-
-    User user = userRepository.findByUsername(jwtService.extractUsername(token))
-            .orElseThrow(() -> new RuntimeException("User not found"));
-    refreshTokenRepository.deleteByUser(user);
-
-    return ResponseEntity.ok("Logged out successfully");
-}
 }

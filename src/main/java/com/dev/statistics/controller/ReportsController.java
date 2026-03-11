@@ -3,6 +3,8 @@ package com.dev.statistics.controller;
 import com.dev.borrow.model.Borrow;
 import com.dev.borrow.model.BorrowStatus;
 import com.dev.borrow.repository.BorrowRepository;
+import com.dev.constant.MessageConstants;
+import com.dev.dto.ApiResponse;
 import com.dev.penalty.model.Penalty;
 import com.dev.penalty.model.PenaltyStatus;
 import com.dev.penalty.repository.PenaltyRepository;
@@ -36,13 +38,14 @@ public class ReportsController {
 
     @GetMapping("/dashboard")
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<DashboardMetricsResponse> getDashboard() {
-        return ResponseEntity.ok(statisticsService.getDashboardMetrics());
+    public ResponseEntity<ApiResponse<DashboardMetricsResponse>> getDashboard() {
+        DashboardMetricsResponse metrics = statisticsService.getDashboardMetrics();
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, metrics));
     }
 
     @GetMapping("/borrow-history")
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<?> getBorrowHistory(
+    public ResponseEntity<ApiResponse<?>> getBorrowHistory(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         
@@ -55,23 +58,23 @@ public class ReportsController {
         
         if (endDate.isBefore(startDate)) {
             return ResponseEntity.badRequest().body(
-                Map.of("error", "End date must be after or equal to start date")
+                ApiResponse.error("End date must be after or equal to start date")
             );
         }
         
         if (ChronoUnit.DAYS.between(startDate, endDate) > 365) {
             return ResponseEntity.badRequest().body(
-                Map.of("error", "Date range cannot exceed 1 year")
+                ApiResponse.error("Date range cannot exceed 1 year")
             );
         }
         
         List<Borrow> borrows = borrowRepository.findByBorrowDateBetweenWithDetails(startDate, endDate);
-        return ResponseEntity.ok(borrows);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, borrows));
     }
 
     @GetMapping("/overdue")
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<List<OverdueReportResponse>> getOverdueReport() {
+    public ResponseEntity<ApiResponse<List<OverdueReportResponse>>> getOverdueReport() {
         List<Borrow> overdueBorrows = borrowRepository.findByStatusAndDueDateBeforeWithDetails(
                 BorrowStatus.OVERDUE, LocalDate.now().plusDays(1));
         
@@ -93,12 +96,12 @@ public class ReportsController {
                 })
                 .collect(Collectors.toList());
         
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, response));
     }
 
     @GetMapping("/penalties")
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<?> getPenaltyReport(
+    public ResponseEntity<ApiResponse<?>> getPenaltyReport(
             @RequestParam(required = false) String status) {
         
         List<Penalty> penalties;
@@ -108,7 +111,7 @@ public class ReportsController {
                 penaltyStatus = PenaltyStatus.valueOf(status.toUpperCase());
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body(
-                    Map.of("error", "Invalid status. Valid values: UNPAID, PAID, WAIVED")
+                    ApiResponse.error("Invalid status. Valid values: UNPAID, PAID, WAIVED")
                 );
             }
             penalties = penaltyRepository.findByStatusWithDetails(penaltyStatus);
@@ -129,13 +132,14 @@ public class ReportsController {
                         .build())
                 .collect(Collectors.toList());
         
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, response));
     }
 
     @GetMapping("/popular-books")
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<List<BookStatisticsResponse>> getPopularBooks(
+    public ResponseEntity<ApiResponse<List<BookStatisticsResponse>>> getPopularBooks(
             @RequestParam(required = false, defaultValue = "10") int limit) {
-        return ResponseEntity.ok(statisticsService.getTopBorrowedBooks(limit));
+        List<BookStatisticsResponse> books = statisticsService.getTopBorrowedBooks(limit);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, books));
     }
 }

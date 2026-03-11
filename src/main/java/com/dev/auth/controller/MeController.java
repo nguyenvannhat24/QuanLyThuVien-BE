@@ -1,5 +1,7 @@
 package com.dev.auth.controller;
 
+import com.dev.constant.MessageConstants;
+import com.dev.dto.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,7 +27,7 @@ public class MeController {
     @Autowired
     private PasswordEncoder passwordEncoder;
       @GetMapping("/me")
-    public ResponseEntity<?> getProfile(Authentication authentication) {
+    public ResponseEntity<ApiResponse<User>> getProfile(Authentication authentication) {
 
         String username = authentication.getName();
         System.out.println("Username from token: " + authentication.getName());
@@ -34,11 +36,11 @@ public class MeController {
         
         user.setPassword(null); // không trả password
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, user));
     }
 
     @PutMapping("/update")
-     public ResponseEntity<?> updateProfile(
+     public ResponseEntity<ApiResponse<User>> updateProfile(
         Authentication authentication,
         @RequestBody UpdateProfileRequest request) {
 
@@ -63,10 +65,10 @@ public class MeController {
 
     user.setPassword(null);
 
-    return ResponseEntity.ok(user);
+    return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, user));
 }
 @PutMapping("/change-password")
-public ResponseEntity<?> changePassword(
+public ResponseEntity<ApiResponse<Void>> changePassword(
         Authentication authentication,
         @RequestBody ChangePasswordRequest request) {
 
@@ -77,12 +79,12 @@ public ResponseEntity<?> changePassword(
 
     if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
         return ResponseEntity.badRequest()
-                .body("Mật khẩu cũ không đúng");
+                .body(ApiResponse.error("Mật khẩu cũ không đúng"));
     }
 
     user.setPassword(passwordEncoder.encode(request.getNewPassword()));
     userRepository.save(user);
 
-    return ResponseEntity.ok("Đổi mật khẩu thành công");
+    return ResponseEntity.ok(ApiResponse.success("Đổi mật khẩu thành công", null));
 }
 }

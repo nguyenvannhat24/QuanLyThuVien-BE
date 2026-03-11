@@ -1,5 +1,7 @@
 package com.dev.notification.controller;
 
+import com.dev.constant.MessageConstants;
+import com.dev.dto.ApiResponse;
 import com.dev.notification.dto.NotificationResponse;
 import com.dev.notification.service.NotificationService;
 import com.dev.user.model.User;
@@ -24,21 +26,22 @@ public class NotificationController {
     
     @GetMapping("/my")
     @PreAuthorize("hasRole('READER')")
-    public ResponseEntity<List<NotificationResponse>> getMyNotifications(
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getMyNotifications(
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(notificationService.getMyNotifications(user.getId()));
+        List<NotificationResponse> notifications = notificationService.getMyNotifications(user.getId());
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, notifications));
     }
     
     @PutMapping("/{id}/read")
     @PreAuthorize("hasRole('READER')")
-    public ResponseEntity<Void> markAsRead(
+    public ResponseEntity<ApiResponse<Void>> markAsRead(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         notificationService.markAsRead(id, user.getId());
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, null));
     }
 }
