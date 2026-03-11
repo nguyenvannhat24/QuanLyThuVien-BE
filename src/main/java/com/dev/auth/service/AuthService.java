@@ -8,13 +8,13 @@ import com.dev.auth.dto.RefreshTokenRequest;
 import com.dev.auth.dto.RegisterRequest;
 
 public interface AuthService {
-    ResponseEntity<?> register(RegisterRequest request);
+    AuthResponse register(RegisterRequest request);
 
-    ResponseEntity<?> login(LoginRequest request);
+    AuthResponse login(LoginRequest request);
 
     /**
      * Refresh an access token by providing a valid refresh token.
      */
-    ResponseEntity<?> refreshToken(RefreshTokenRequest request);
+    AuthResponse refreshToken(RefreshTokenRequest request);
 
 }

@@ -2,6 +2,8 @@ package com.dev.user.controller;
 
 import java.util.List;
 
+import com.dev.constant.MessageConstants;
+import com.dev.dto.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -24,13 +26,15 @@ public class UserController {
     private UserRepository userRepository;
 
     @GetMapping
-    public List<User> getAll() {
-        return userRepository.findAll();
+    public ResponseEntity<ApiResponse<List<User>>> getAll() {
+        List<User> users = userRepository.findAll();
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, users));
     }
 
     @DeleteMapping("/{id}")
-public void delete(@PathVariable Long id) {
-    userRepository.deleteById(id);
-}
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+        userRepository.deleteById(id);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, null));
+    }
   
 }

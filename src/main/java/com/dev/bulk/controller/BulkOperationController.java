@@ -4,6 +4,8 @@ import com.dev.audit.annotation.AdminAction;
 import com.dev.bulk.dto.GenerateBookCopiesRequest;
 import com.dev.bulk.service.BulkOperationService;
 import com.dev.book.model.BookCopy;
+import com.dev.constant.MessageConstants;
+import com.dev.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,37 +31,32 @@ public class BulkOperationController {
     
     @PostMapping("/books/import")
     @AdminAction("BULK_IMPORT_BOOKS")
-    public ResponseEntity<Map<String, Object>> importBooks(
+    public ResponseEntity<ApiResponse<Map<String, Object>>> importBooks(
             @RequestParam("file") MultipartFile file) {
         
         if (file.isEmpty()) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "File is empty");
-            return ResponseEntity.badRequest().body(error);
+            return ResponseEntity.badRequest().body(ApiResponse.error("File is empty"));
         }
         
         long maxSizeBytes = 10 * 1024 * 1024;
         if (file.getSize() > maxSizeBytes) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "File size exceeds maximum allowed size of 10MB");
-            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(error);
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                    .body(ApiResponse.error("File size exceeds maximum allowed size of 10MB"));
         }
         
         String filename = file.getOriginalFilename();
         if (filename == null || !filename.toLowerCase().endsWith(".csv")) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "File must be a CSV file");
-            return ResponseEntity.badRequest().body(error);
+            return ResponseEntity.badRequest().body(ApiResponse.error("File must be a CSV file"));
         }
         
         Map<String, Object> result = bulkOperationService.importBooksFromCsv(file);
         
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, result));
     }
     
     @PostMapping("/book-copies/generate")
     @AdminAction("GENERATE_BOOK_COPIES")
-    public ResponseEntity<Map<String, Object>> generateBookCopies(
+    public ResponseEntity<ApiResponse<Map<String, Object>>> generateBookCopies(
             @RequestBody @Valid GenerateBookCopiesRequest request) {
         
         try {
@@ -76,12 +73,11 @@ public class BulkOperationController {
                     .map(BookCopy::getId)
                     .collect(Collectors.toList()));
             
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success("Book copies generated successfully", response));
             
         } catch (RuntimeException e) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 }

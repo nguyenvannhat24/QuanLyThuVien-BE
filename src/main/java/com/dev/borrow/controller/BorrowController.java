@@ -4,6 +4,8 @@ import com.dev.borrow.dto.BorrowRequest;
 import com.dev.borrow.dto.BorrowResponse;
 import com.dev.borrow.dto.DashboardResponse;
 import com.dev.borrow.service.BorrowService;
+import com.dev.constant.MessageConstants;
+import com.dev.dto.ApiResponse;
 import com.dev.user.repository.UserRepository;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,40 +27,46 @@ public class BorrowController {
     private final UserRepository userRepository;
 
     @PostMapping
-    public BorrowResponse borrowBook(@RequestBody BorrowRequest request,
+    public ResponseEntity<ApiResponse<BorrowResponse>> borrowBook(@RequestBody BorrowRequest request,
                                      Principal principal) {
 
         com.dev.user.model.User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return borrowService.borrowBook(user.getId(), request.getBookId());
+        BorrowResponse response = borrowService.borrowBook(user.getId(), request.getBookId());
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.BORROW_SUCCESS, response));
     }
 
     @PostMapping("/{id}/return")
     @PreAuthorize("hasAnyRole('READER', 'LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<BorrowResponse> returnBorrow(@PathVariable Long id) {
-        return ResponseEntity.ok(borrowService.returnBorrow(id));
+    public ResponseEntity<ApiResponse<BorrowResponse>> returnBorrow(@PathVariable Long id) {
+        BorrowResponse response = borrowService.returnBorrow(id);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.RETURN_SUCCESS, response));
     }
 
     @PostMapping("/{id}/renew")
     @PreAuthorize("hasAnyRole('READER', 'LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<BorrowResponse> renewBorrow(@PathVariable Long id) {
-        return ResponseEntity.ok(borrowService.renewBorrow(id));
+    public ResponseEntity<ApiResponse<BorrowResponse>> renewBorrow(@PathVariable Long id) {
+        BorrowResponse response = borrowService.renewBorrow(id);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.RENEW_SUCCESS, response));
     }
 
     @GetMapping("/my-books")
-    public List<BorrowResponse> myBooks(Principal principal) {
+    public ResponseEntity<ApiResponse<List<BorrowResponse>>> myBooks(Principal principal) {
         com.dev.user.model.User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return borrowService.getMyBorrows(user.getId());
+        List<BorrowResponse> response = borrowService.getMyBorrows(user.getId());
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, response));
     }
 
     @GetMapping
-    public List<BorrowResponse> getAll() {
-        return borrowService.getAll();
+    public ResponseEntity<ApiResponse<List<BorrowResponse>>> getAll() {
+        List<BorrowResponse> response = borrowService.getAll();
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, response));
     }
 
     @GetMapping("/dashboard")
-    public DashboardResponse dashboard() {
-        return borrowService.getDashboard();
+    public ResponseEntity<ApiResponse<DashboardResponse>> dashboard() {
+        DashboardResponse response = borrowService.getDashboard();
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, response));
     }
 }

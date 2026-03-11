@@ -1,5 +1,7 @@
 package com.dev.reservation.controller;
 
+import com.dev.constant.MessageConstants;
+import com.dev.dto.ApiResponse;
 import com.dev.reservation.dto.ReservationRequest;
 import com.dev.reservation.dto.ReservationResponse;
 import com.dev.reservation.service.ReservationService;
@@ -26,31 +28,33 @@ public class ReservationController {
     
     @PostMapping
     @PreAuthorize("hasRole('READER')")
-    public ResponseEntity<ReservationResponse> createReservation(
+    public ResponseEntity<ApiResponse<ReservationResponse>> createReservation(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody @Valid ReservationRequest request) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(reservationService.createReservation(user.getId(), request));
+        ReservationResponse response = reservationService.createReservation(user.getId(), request);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.RESERVATION_SUCCESS, response));
     }
     
     @GetMapping("/my")
     @PreAuthorize("hasRole('READER')")
-    public ResponseEntity<List<ReservationResponse>> getMyReservations(
+    public ResponseEntity<ApiResponse<List<ReservationResponse>>> getMyReservations(
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(reservationService.getMyReservations(user.getId()));
+        List<ReservationResponse> responses = reservationService.getMyReservations(user.getId());
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, responses));
     }
     
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('READER')")
-    public ResponseEntity<Void> cancelReservation(
+    public ResponseEntity<ApiResponse<Void>> cancelReservation(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         reservationService.cancelReservation(id, user.getId());
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.RESERVATION_CANCELLED, null));
     }
 }

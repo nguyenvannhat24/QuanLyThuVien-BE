@@ -1,5 +1,7 @@
 package com.dev.penalty.controller;
 
+import com.dev.constant.MessageConstants;
+import com.dev.dto.ApiResponse;
 import com.dev.penalty.dto.PenaltyRequest;
 import com.dev.penalty.dto.PenaltyResponse;
 import com.dev.penalty.service.PenaltyService;
@@ -26,23 +28,26 @@ public class PenaltyController {
     
     @PostMapping
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<PenaltyResponse> createManualPenalty(
+    public ResponseEntity<ApiResponse<PenaltyResponse>> createManualPenalty(
             @RequestBody @Valid PenaltyRequest request) {
-        return ResponseEntity.ok(penaltyService.createManualPenalty(request));
+        PenaltyResponse response = penaltyService.createManualPenalty(request);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.PENALTY_CREATED, response));
     }
     
     @GetMapping("/my")
     @PreAuthorize("hasRole('READER')")
-    public ResponseEntity<List<PenaltyResponse>> getMyPenalties(
+    public ResponseEntity<ApiResponse<List<PenaltyResponse>>> getMyPenalties(
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(penaltyService.getMyPenalties(user.getId()));
+        List<PenaltyResponse> responses = penaltyService.getMyPenalties(user.getId());
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, responses));
     }
     
     @PostMapping("/{id}/pay")
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<PenaltyResponse> payPenalty(@PathVariable Long id) {
-        return ResponseEntity.ok(penaltyService.payPenalty(id));
+    public ResponseEntity<ApiResponse<PenaltyResponse>> payPenalty(@PathVariable Long id) {
+        PenaltyResponse response = penaltyService.payPenalty(id);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.PENALTY_PAID, response));
     }
 }

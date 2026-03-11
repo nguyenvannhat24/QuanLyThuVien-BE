@@ -5,6 +5,8 @@ import com.dev.config.dto.SystemConfigRequest;
 import com.dev.config.dto.SystemConfigResponse;
 import com.dev.config.model.SystemConfig;
 import com.dev.config.service.SystemConfigService;
+import com.dev.constant.MessageConstants;
+import com.dev.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,27 +27,27 @@ public class SystemConfigController {
     private final SystemConfigService systemConfigService;
 
     @GetMapping
-    public ResponseEntity<List<SystemConfigResponse>> getAllConfigs() {
+    public ResponseEntity<ApiResponse<List<SystemConfigResponse>>> getAllConfigs() {
         List<SystemConfig> configs = systemConfigService.getAllConfigs();
         List<SystemConfigResponse> response = configs.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, response));
     }
 
     @GetMapping("/{key}")
-    public ResponseEntity<SystemConfigResponse> getConfig(@PathVariable String key) {
+    public ResponseEntity<ApiResponse<SystemConfigResponse>> getConfig(@PathVariable String key) {
         SystemConfig config = systemConfigService.getConfig(key);
-        return ResponseEntity.ok(toResponse(config));
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, toResponse(config)));
     }
 
     @PutMapping("/{key}")
     @AdminAction("UPDATE_SYSTEM_CONFIG")
-    public ResponseEntity<SystemConfigResponse> updateConfig(
+    public ResponseEntity<ApiResponse<SystemConfigResponse>> updateConfig(
             @PathVariable String key,
             @Valid @RequestBody SystemConfigRequest request) {
         SystemConfig updated = systemConfigService.updateConfig(key, request.getConfigValue());
-        return ResponseEntity.ok(toResponse(updated));
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, toResponse(updated)));
     }
 
     private SystemConfigResponse toResponse(SystemConfig config) {

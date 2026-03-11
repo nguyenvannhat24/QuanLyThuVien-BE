@@ -37,21 +37,17 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
     @Override
-    public ResponseEntity register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) {
         log.info("Registration attempt for username: {}", request.getUsername());
         
         if (userRepository.existsByUsername(request.getUsername())) {
             log.warn("Registration failed: username already exists - {}", request.getUsername());
-            return ResponseEntity
-            .status(HttpStatus.CONFLICT)
-                    .body("{\"message\": \"Username đã tồn tại!\"}");
+            throw new RuntimeException("Username đã tồn tại!");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
             log.warn("Registration failed: email already exists - {}", request.getEmail());
-            return ResponseEntity
-            .status(HttpStatus.CONFLICT)
-                    .body("{\"message\": \"Email đã tồn tại!\"}");
+            throw new RuntimeException("Email đã tồn tại!");
         }
 
         User user = new User();
@@ -70,18 +66,16 @@ public class AuthServiceImpl implements AuthService {
         response.setUsername(savedUser.getUsername());
         response.setEmail(savedUser.getEmail());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return response;
         
     }
 @Override
-public ResponseEntity<?> login(LoginRequest request) {
+public AuthResponse login(LoginRequest request) {
     log.info("Login attempt for username: {}", request.getUsername());
 
     if(request.getUsername() == null || request.getPassword() == null) {
         log.warn("Login failed: missing username or password");
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body("{\"message\": \"Username và password không được để trống!\"}");
+        throw new RuntimeException("Username và password không được để trống!");
     }
     
     try {
@@ -118,30 +112,27 @@ public ResponseEntity<?> login(LoginRequest request) {
     response.setToken(token);
     response.setRefreshToken(refreshToken);
 
-    return ResponseEntity.ok(response);
+    return response;
 }
     
     @Override
-    public ResponseEntity<?> refreshToken(RefreshTokenRequest request) {
+    public AuthResponse refreshToken(RefreshTokenRequest request) {
         if (request == null || request.getRefreshToken() == null) {
             log.warn("Refresh token request missing token");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("{\"message\": \"Refresh token không được để trống\"}");
+            throw new RuntimeException("Refresh token không được để trống");
         }
 
         Optional<RefreshToken> optional = refreshTokenRepository.findByToken(request.getRefreshToken());
         if (optional.isEmpty()) {
             log.warn("Invalid refresh token provided");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("{\"message\": \"Refresh token không hợp lệ\"}");
+            throw new RuntimeException("Refresh token không hợp lệ");
         }
 
         RefreshToken stored = optional.get();
         if (stored.getExpiryDate().before(new Date())) {
             refreshTokenRepository.delete(stored);
             log.warn("Expired refresh token attempted");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("{\"message\": \"Refresh token đã hết hạn\"}");
+            throw new RuntimeException("Refresh token đã hết hạn");
         }
 
         User user = userRepository.findById(stored.getUser().getId())
@@ -163,7 +154,7 @@ public ResponseEntity<?> login(LoginRequest request) {
         resp.setToken(newToken);
         resp.setRefreshToken(newRefresh);
 
-        return ResponseEntity.ok(resp);
+        return resp;
     }
 
 }

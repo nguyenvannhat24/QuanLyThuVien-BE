@@ -3,6 +3,8 @@ package com.dev.book.controller;
 import com.dev.book.dto.PublisherRequest;
 import com.dev.book.dto.PublisherResponse;
 import com.dev.book.service.PublisherService;
+import com.dev.constant.MessageConstants;
+import com.dev.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,33 +25,38 @@ public class PublisherController {
 
     @GetMapping
     @PreAuthorize("permitAll()")
-    public ResponseEntity<List<PublisherResponse>> getAll() {
-        return ResponseEntity.ok(publisherService.getAll());
+    public ResponseEntity<ApiResponse<List<PublisherResponse>>> getAll() {
+        List<PublisherResponse> publishers = publisherService.getAll();
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, publishers));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<PublisherResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(publisherService.getById(id));
+    public ResponseEntity<ApiResponse<PublisherResponse>> getById(@PathVariable Long id) {
+        PublisherResponse publisher = publisherService.getById(id);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.OPERATION_SUCCESS, publisher));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<PublisherResponse> create(@Valid @RequestBody PublisherRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(publisherService.create(request));
+    public ResponseEntity<ApiResponse<PublisherResponse>> create(@Valid @RequestBody PublisherRequest request) {
+        PublisherResponse publisher = publisherService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(MessageConstants.PUBLISHER_CREATED, publisher));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<PublisherResponse> update(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<PublisherResponse>> update(@PathVariable Long id,
                                                     @Valid @RequestBody PublisherRequest request) {
-        return ResponseEntity.ok(publisherService.update(id, request));
+        PublisherResponse publisher = publisherService.update(id, request);
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.PUBLISHER_UPDATED, publisher));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         publisherService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(MessageConstants.PUBLISHER_DELETED, null));
     }
 }
