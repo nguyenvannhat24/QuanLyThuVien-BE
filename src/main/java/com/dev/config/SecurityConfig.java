@@ -47,7 +47,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/user/**").hasAnyRole("USER","ADMIN")
+                .requestMatchers("/api/user/**").hasAnyRole("READER","ADMIN")
                 .requestMatchers("/api/books/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/borrows/**").permitAll()
                 .anyRequest().authenticated()
