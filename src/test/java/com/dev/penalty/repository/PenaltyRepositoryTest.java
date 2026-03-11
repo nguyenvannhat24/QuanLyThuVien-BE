@@ -64,7 +64,7 @@ class PenaltyRepositoryTest {
         testUser.setPassword("password");
         testUser.setFullName("Test User");
         testUser.setEmail("test@example.com");
-        testUser.setRole(Role.USER);
+        testUser.setRole(Role.READER);
         testUser.setStatus(UserStatus.ACTIVE);
         testUser = userRepository.save(testUser);
 
