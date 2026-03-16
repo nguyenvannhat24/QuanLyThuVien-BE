@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhắc nhở sách quá hạn</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .info-box { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #eb3349; }
+        .info-item { margin: 10px 0; }
+        .label { font-weight: bold; color: #eb3349; }
+        .value { color: #333; }
+        .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 6px; margin: 15px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
+        .btn { display: inline-block; background: #eb3349; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚠️ Nhắc nhở sách quá hạn</h1>
+    </div>
+    
+    <div class="content">
+        <p>Kính gửi <strong th:text="${user.fullName}">Người dùng</strong>,</p>
+        
+        <div class="warning">
+            <strong>⏰ Cảnh báo:</strong> Bạn đang có sách quá hạn. Vui lòng trả sách sớm nhất có thể.
+        </div>
+        
+        <div class="info-box">
+            <div class="info-item">
+                <span class="label">Tên sách:</span>
+                <span class="value" th:text="${book.title}">Tên sách</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Mã bản sao:</span>
+                <span class="value" th:text="${bookCopy.copyCode}">Mã bản sao</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Ngày phải trả:</span>
+                <span class="value" th:text="${dueDate}">Ngày phải trả</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Số ngày quá hạn:</span>
+                <span class="value" th:text="${daysOverdue}">0</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Phí phạt/ngày:</span>
+                <span class="value" th:text="${overdueFinePerDay}">5,000 VNĐ</span>
+            </div>
+        </div>
+        
+        <p>📝 <strong>Lưu ý quan trọng:</strong></p>
+        <ul>
+            <li>Sách quá hạn sẽ bị phạt <strong th:text="${overdueFinePerDay}">5,000 VNĐ</strong> cho mỗi ngày.</li>
+            <li>Nếu không trả sách, bạn sẽ không thể mượn thêm sách khác.</li>
+            <li>Sau khi thanh toán phạt, bạn mới có thể tiếp tục mượn sách.</li>
+        </ul>
+        
+        <p>Vui lòng đến Thư viện để trả sách và thanh toán phạt (nếu có).</p>
+        
+        <div class="footer">
+            <p>© 2026 Hệ thống Quản lý Thư viện</p>
+            <p>Email này được gửi tự động. Vui lòng không trả lời email này.</p>
+        </div>
+    </div>
+</body>
+</html>

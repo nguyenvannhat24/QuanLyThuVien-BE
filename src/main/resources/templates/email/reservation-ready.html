@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sách đã có sẵn - Thông báo đặt chỗ</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .info-box { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #f5576c; }
+        .info-item { margin: 10px 0; }
+        .label { font-weight: bold; color: #f5576c; }
+        .value { color: #333; }
+        .notice { background: #d4edda; border: 1px solid #28a745; padding: 15px; border-radius: 6px; margin: 15px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📖 Sách đã có sẵn!</h1>
+    </div>
+    
+    <div class="content">
+        <p>Kính gửi <strong th:text="${user.fullName}">Người dùng</strong>,</p>
+        
+        <div class="notice">
+            <strong>🎉 Tin vui!</strong> Cuốn sách bạn đặt chỗ đã có sẵn tại Thư viện.
+        </div>
+        
+        <div class="info-box">
+            <div class="info-item">
+                <span class="label">Tên sách:</span>
+                <span class="value" th:text="${book.title}">Tên sách</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Thời hạn giữ chỗ:</span>
+                <span class="value" th:text="${holdDays} + ' ngày'">3 ngày</span>
+            </div>
+        </div>
+        
+        <p>📝 <strong>Hướng dẫn:</strong></p>
+        <ul>
+            <li>Vui lòng đến Thư viện trong vòng <strong th:text="${holdDays}">3</strong> ngày để mượn sách.</li>
+            <li>Nếu không mượn trong thời gian quy định, đặt chỗ của bạn sẽ bị hủy tự động.</li>
+            <li>Sách sẽ được chuyển cho người đặt chỗ tiếp theo nếu bạn không mượn kịp thời.</li>
+        </ul>
+        
+        <p>Hãy đến Thư viện ngay hôm nay để nhận sách nhé!</p>
+        
+        <div class="footer">
+            <p>© 2026 Hệ thống Quản lý Thư viện</p>
+            <p>Email này được gửi tự động. Vui lòng không trả lời email này.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -56,12 +56,14 @@ Hệ thống quản lý thư viện cung cấp một giải pháp hoàn chỉnh 
 - Lịch sử thanh toán
 - Quản lý nợ
 
-### 🚧 Phase 6: Thông báo (Coming Soon)
+### ✅ Phase 6: Thông báo
 - Thông báo trả sách sắp đến hạn
 - Thông báo sách có sẵn (đã đặt chỗ)
 - Thông báo phạt
-- Email notifications
+- Email notifications với JavaMailSender
 - In-app notifications
+- Scheduled jobs tự động gửi thông báo định kỳ
+- 5 email templates (Thymeleaf): xác nhận mượn, xác nhận trả, nhắc nhở quá hạn, sách có sẵn, thông báo phạt
 
 ### 🚧 Phase 7: Báo cáo và thống kê (Coming Soon)
 - Báo cáo mượn/trả theo thời gian

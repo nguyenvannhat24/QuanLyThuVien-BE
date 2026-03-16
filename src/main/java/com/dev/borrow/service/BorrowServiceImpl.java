@@ -10,11 +10,14 @@ import com.dev.borrow.model.Borrow;
 import com.dev.borrow.model.BorrowStatus;
 import com.dev.borrow.repository.BorrowRepository;
 import com.dev.config.service.SystemConfigService;
+import com.dev.email.service.EmailService;
+import com.dev.notification.model.NotificationType;
 import com.dev.notification.service.NotificationService;
 import com.dev.penalty.service.PenaltyService;
 import com.dev.reservation.model.Reservation;
 import com.dev.reservation.model.ReservationStatus;
 import com.dev.reservation.service.ReservationService;
+import com.dev.user.model.User;
 import com.dev.user.model.UserStatus;
 import com.dev.user.repository.UserRepository;
 
@@ -44,6 +47,7 @@ public class BorrowServiceImpl implements BorrowService {
     private final PenaltyService penaltyService;
     private final ReservationService reservationService;
     private final NotificationService notificationService;
+    private final EmailService emailService;
     
     @Override
     public DashboardResponse getDashboard() {
@@ -128,6 +132,11 @@ public class BorrowServiceImpl implements BorrowService {
 
         log.info("Book borrowed successfully - borrowId: {}, userId: {}, bookId: {}", borrow.getId(), userId, bookId);
 
+        notificationService.createNotification(user, "Xác nhận mượn sách",
+                "Bạn đã mượn thành công sách \"" + book.getTitle() + "\"", NotificationType.OVERDUE_REMINDER);
+
+        emailService.sendBorrowConfirmationEmail(user, borrow);
+
         return mapToResponse(borrow);
     }
 
@@ -169,6 +178,14 @@ public class BorrowServiceImpl implements BorrowService {
         bookCopy.setStatus(BookCopyStatus.AVAILABLE);
         bookCopyRepository.save(bookCopy);
         borrowRepository.save(borrow);
+
+        User user = borrow.getUser();
+        String bookTitle = bookCopy.getBook().getTitle();
+        
+        notificationService.createNotification(user, "Xác nhận trả sách",
+                "Bạn đã trả sách \"" + bookTitle + "\"", NotificationType.SYSTEM);
+
+        emailService.sendReturnConfirmationEmail(user, borrow);
 
         reservationService.notifyNextInQueue(bookCopy.getBook());
 
