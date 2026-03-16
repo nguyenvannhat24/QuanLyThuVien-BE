@@ -65,12 +65,13 @@ Hệ thống quản lý thư viện cung cấp một giải pháp hoàn chỉnh 
 - Scheduled jobs tự động gửi thông báo định kỳ
 - 5 email templates (Thymeleaf): xác nhận mượn, xác nhận trả, nhắc nhở quá hạn, sách có sẵn, thông báo phạt
 
-### 🚧 Phase 7: Báo cáo và thống kê (Coming Soon)
+### ✅ Phase 7: Báo cáo và thống kê
 - Báo cáo mượn/trả theo thời gian
 - Thống kê sách phổ biến
 - Báo cáo doanh thu phạt
 - Thống kê người dùng hoạt động
-- Export CSV/Excel
+- Export CSV/Excel với Apache POI
+- 4 export endpoints: borrow-history, overdue, penalties, popular-books
 
 ### 🚧 Phase 8: Quản trị viên (Coming Soon)
 - Dashboard tổng quan
