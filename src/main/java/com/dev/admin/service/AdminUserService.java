@@ -7,4 +7,6 @@ public interface AdminUserService {
     void unlockUser(Long userId);
     
     void changeUserRole(Long userId, String newRole);
+    
+    void resetPassword(Long userId);
 }

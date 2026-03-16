@@ -5,6 +5,7 @@ import com.dev.user.model.User;
 import com.dev.user.model.UserStatus;
 import com.dev.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,12 +14,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminUserServiceImpl implements AdminUserService {
     
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    private static final String DEFAULT_PASSWORD = "Library@123";
 
     @Override
     @Transactional
     public void lockUser(Long userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId));
+        
+        if (user.getRole() == Role.ADMIN) {
+            throw new IllegalArgumentException("Không thể khóa tài khoản admin");
+        }
         
         user.setStatus(UserStatus.LOCKED);
         userRepository.save(user);
@@ -48,6 +56,16 @@ public class AdminUserServiceImpl implements AdminUserService {
         }
         
         user.setRole(role);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId));
+        
+        user.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
         userRepository.save(user);
     }
 }

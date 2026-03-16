@@ -73,12 +73,11 @@ Hệ thống quản lý thư viện cung cấp một giải pháp hoàn chỉnh 
 - Export CSV/Excel với Apache POI
 - 4 export endpoints: borrow-history, overdue, penalties, popular-books
 
-### 🚧 Phase 8: Quản trị viên (Coming Soon)
+### ✅ Phase 8: Quản trị viên
 - Dashboard tổng quan
-- Quản lý người dùng
+- Quản lý người dùng (block/unblock, reset password)
 - Cấu hình hệ thống
-- Audit logs
-- Backup/Restore
+- Audit logs viewer API
 
 ## Công Nghệ Sử Dụng
 

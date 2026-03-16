@@ -45,6 +45,13 @@ public class AdminUserController {
         return ResponseEntity.ok(ApiResponse.success("Đã thay đổi vai trò người dùng thành công", null));
     }
 
+    @PostMapping("/{id}/reset-password")
+    @AdminAction("RESET_USER_PASSWORD")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@PathVariable Long id) {
+        adminUserService.resetPassword(id);
+        return ResponseEntity.ok(ApiResponse.success("Đã đặt lại mật khẩu người dùng thành công. Mật khẩu mới: Library@123", null));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException e) {
         return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
